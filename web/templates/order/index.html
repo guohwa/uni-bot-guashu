@@ -1,0 +1,56 @@
+{% extends "../base.html" %}
+{% block content %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-2">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="nav flex-column nav-pills" role="tablist" aria-orientation="vertical">{% for item in items %}
+                                <a class="nav-link{% if item.ID == customer.ID %} active{% endif %}" href="/order/{{ item.ID.Hex() }}" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">{{ item.Name }}</a>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-10">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h4 class="float-left">Order history</h4>
+                            </div>
+                            <div class="table{% if orders|length == 0 %} mb-0{% endif %}">
+                                <div class="thead">
+                                    <div class="tr">
+                                        <div class="th">Time</div>
+                                        <div class="th">Symbol</div>
+                                        <div class="th">Type</div>
+                                        <div class="th">Side</div>
+                                        <div class="th">PositionSide</div>
+                                        <div class="th">Price</div>
+                                        <div class="th">AvgPrice</div>
+                                        <div class="th">Quantity</div>
+                                        <div class="th">ReduceOnly</div>
+                                        <div class="th">Status</div>
+                                    </div>
+                                </div>
+                                <div class="tbody">{% for item in orders %}
+                                    <div class="tr">
+                                        <div class="td" data-title="Time">{{ item.Time|unixmilli|time:"2006-01-02 15:04:05" }}</div>
+                                        <div class="td" data-title="Symbol">{{ item.Symbol }}</div>
+                                        <div class="td" data-title="Type">{{ item.Type }}</div>
+                                        <div class="td{% if item.Side|upper =='SELL' %} text-yellow{% elif item.Side|upper =='BUY' %} text-aqua{% else %}{% endif %}" data-title="Side">{{ item.Side }}</div>
+                                        <div class="td{% if item.PositionSide|upper =='SHORT' %} text-red{% elif item.PositionSide|upper =='LONG' %} text-green{% else %}{% endif %}" data-title="PositionSide">{{ item.PositionSide }}</div>
+                                        <div class="td" data-title="Price">{{ item.Price }}</div>
+                                        <div class="td" data-title="AvgPrice">{{ item.AvgPrice }}</div>
+                                        <div class="td" data-title="OrigQuantity">{{ item.OrigQuantity }}</div>
+                                        <div class="td" data-title="ReduceOnly">{{ item.ReduceOnly }}</div>
+                                        <div class="td" data-title="Status">{{ item.Status }}</div>
+                                    </div>{% endfor %}
+                                </div>
+                            </div>
+                            <div class="tfoot{% if orders|length > 0 %} d-none{% endif %}">No Data</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}

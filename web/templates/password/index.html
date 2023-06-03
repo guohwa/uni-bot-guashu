@@ -1,0 +1,40 @@
+{% extends "../base.html" %}
+{% block content %}
+        <div class="container">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Change Password</h4>
+                    <form class="form ajax-form" method="post"{% if user.Role != 'Demo' %}action="/password"{% endif %}>
+                        <div class="form-group toggle-password">
+                            <label for="inputPassword">Password</label>
+                            <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Password" autocomplete="off" value="" autofocus{% if user.Role == 'Demo' %} disabled{% endif %}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+                            </svg>
+                        </div>
+                        <div class="form-group toggle-password">
+                            <label for="inputPassword1">New Password</label>
+                            <input type="password" class="form-control" id="inputPassword1" name="password1" placeholder="New Password" autocomplete="off" value=""{% if user.Role == 'Demo' %} disabled{% endif %}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+                            </svg>
+                        </div>
+                        <div class="form-group toggle-password">
+                            <label for="inputPassword2">Confirm Password</label>
+                            <input type="password" class="form-control" id="inputPassword2" name="password2" placeholder="Confirm Password" autocomplete="off" value=""{% if user.Role == 'Demo' %} disabled{% endif %}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+                            </svg>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-sm btn-primary"{% if user.Role == 'Demo' %} disabled{% endif %}>Submit</button>
+                            <button type="reset" class="btn btn-sm btn-warning"{% if user.Role == 'Demo' %} disabled{% endif %}>Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+{% endblock %}

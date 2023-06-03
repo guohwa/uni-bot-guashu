@@ -1,0 +1,48 @@
+{% extends "../base.html" %}
+{% block content %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-2">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="nav flex-column nav-pills" role="tablist" aria-orientation="vertical">{% for item in items %}
+                                <a class="nav-link{% if item.ID == customer.ID %} active{% endif %}" href="/income/{{ item.ID.Hex() }}" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">{{ item.Name }}</a>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-10">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h4 class="float-left">Income history</h4>
+                            </div>
+                            <div class="table{% if incomes|length == 0 %} mb-0{% endif %}">
+                                <div class="thead">
+                                    <div class="tr">
+                                        <div class="th">Time</div>
+                                        <div class="th">Symbol</div>
+                                        <div class="th">Type</div>
+                                        <div class="th">Income</div>
+                                        <div class="th">Asset</div>
+                                        <div class="th">Info</div>
+                                    </div>
+                                </div>
+                                <div class="tbody">{% for item in incomes %}
+                                    <div class="tr">
+                                        <div class="td" data-title="Time">{{ item.Time|unixmilli|time:"2006-01-02 15:04:05" }}</div>
+                                        <div class="td" data-title="Symbol">{{ item.Symbol }}</div>
+                                        <div class="td{% if item.IncomeType =='REALIZED_PNL' and item.Income > 0.0 %} text-green{% elif item.IncomeType =='REALIZED_PNL' and item.Income < 0.0  %} text-red{% elif item.IncomeType =='FUNDING_FEE' %} text-yellow{% elif item.IncomeType =='COMMISSION' %} text-aqua{% else %}{% endif %}" data-title="Type">{{ item.IncomeType }}</div>
+                                        <div class="td{% if item.Income > 0.0 %} text-green{% elif item.Income < 0.0 %} text-red{% else %}{% endif %}" data-title="Income">{{ item.Income }}</div>
+                                        <div class="td" data-title="Asset">{{ item.Asset }}</div>
+                                        <div class="td" data-title="Info">{{ item.Info }}</div>
+                                    </div>{% endfor %}
+                                </div>
+                            </div>
+                            <div class="tfoot{% if incomes|length > 0 %} d-none{% endif %}">No Data</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}

@@ -1,0 +1,223 @@
+html, body {
+    width: 100%;
+    height: 100%;
+}
+body {
+    position: relative;
+    margin: 0;
+}
+.chart {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 40px;
+    overflow: hidden;
+}
+.sidebar {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 44px;
+    background-color: #1e222d;
+    border-left: 2px solid #2a2e39;
+}
+.sidebar .item {
+    display: block;
+    height: 44px;
+    width: 44px;
+    padding: 4px;
+}
+.sidebar .item .svg {
+    width: 100%;
+    height: 100%;
+}
+.sidebar .item.active {
+    background-color: #131722;
+    color: #b2b5be;
+}
+.sidebar .item.active .icon {
+    color: #fff;
+}
+.sidebar .item .icon {
+    display: block;
+    cursor: pointer;
+    height: 36px;
+    width: 36px;
+    padding: 6px;
+    color: #b2b5be;
+}
+.sidebar .item .icon:hover {
+    background-color: #2a2e39;
+    color: #fff;
+}
+.legend {
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    right: 82px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    z-index: 6;
+}
+.legend span {
+    -moz-user-select:none;
+    -webkit-user-select:none;
+    -ms-user-select:none;
+    -khtml-user-select:none;
+    user-select:none;
+    margin-right: 6px;
+}
+.legend small {
+    font-size: 12px;
+    font-weight: normal;
+}
+.toolbar {
+    position: absolute;
+    left: 14px;
+    top: 32px;
+    right: 82px;
+    height: 26px;
+    line-height: 26px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #b2b5be;
+    z-index: 6;
+}
+.toolbar .item {
+    display: inline-block;
+    height: 18px;
+    width: 18px;
+    padding: 4px;
+}
+.toolbar .item .icon {
+    display: inline-block;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+.toolbar .item:first-child{
+    padding-left: 2px;
+}
+.text-right {
+    text-align: right!important;
+}
+.text-green {
+    color: #0ecb81!important;
+}
+.text-red {
+    color: #f6465d!important;
+}
+.candles {
+    position: absolute;
+    right: 304px;
+    left: 0;
+    height: 100%;
+    background-color: #161a25;
+}
+.activity {
+    position: absolute;
+    right: 44px;
+    width: 260px;
+    height: 100%;
+    border-left: 2px solid #2a2e39;
+    background-color: #161a25;
+}
+.activity .page {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: none;
+}
+.activity .page.active {
+    display: block;
+}
+.page-1 .card {
+    height: 100%;
+}
+.activity .card {
+    background-color: inherit;
+    border: none;
+}
+.activity .card-body{
+    padding: 0 6px;
+}
+.activity .card-title {
+    margin: 0;
+    padding-left: 10px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    color: #fff;
+    border-top: 2px solid #2a2e39;
+    border-bottom: 2px solid #2a2e39;
+    height: auto;
+}
+.page-1 .card-body {
+    position: absolute;
+    top: 33px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+.asks {
+    height: 232px;
+    overflow: hidden;
+}
+.bids {
+    margin-bottom: 10px;
+    height: 204px;
+    overflow: hidden;
+}
+.bids table>thead>tr>th {
+    color: #161a2500;
+}
+.price span {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    width: 100%;
+    height: 26px;
+    line-height: 26px;
+    padding-left: 8px;
+    padding-right: 4px;
+}
+.price svg {
+    height: 12px;
+    width: 12px;
+}
+.trades table, .asks table, .bids table, .symbols table {
+    width: 100%;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+.trades table>thead>tr>th, .asks table>thead>tr>th, .symbols table>thead>tr>th {
+    color: #848e9c;
+    font-size: 8px;
+    text-align: left;
+    padding-top: 6px;
+    padding-bottom: 4px;
+}
+.trades table>tbody>tr>td, .asks table>tbody>tr>td, .bids table>tbody>tr>td, .symbols table>tbody>tr>td {
+    color: #b7bdc6;
+    font-size: 8px;
+    text-align: left;
+}
+.symbols table>tbody>tr {
+    cursor: pointer;
+}
+.symbols table>tbody>tr:hover {
+    background-color: #2a2e39;
+    color: #fff;
+}
+@media screen and (max-width: 768px) {
+    .chart .activity, .chart .sidebar {
+        display: none;
+    }
+    .chart .candles {
+        right: 0;
+    }
+}

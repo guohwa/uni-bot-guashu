@@ -1,0 +1,181 @@
+{% extends "../base.html" %}
+{% block content %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-2">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="nav flex-column nav-pills" role="tablist" aria-orientation="vertical">{% for item in items %}
+                                <a class="nav-link{% if item.ID == customer.ID %} active{% endif %}" href="/position/{{ item.ID.Hex() }}" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">{{ item.Name }}</a>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-10">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h4 class="float-left">Positions</h4>
+                            </div>
+                            <div class="table{% if account.Positions|length == 0 %} mb-0{% endif %}">
+                                <div class="thead">
+                                    <div class="tr">
+                                        <div class="th">Symbol</div>
+                                        <div class="th">PositionSide</div>
+                                        <div class="th">Leverage</div>
+                                        <div class="th">EntryPrice</div>
+                                        <div class="th">PositionAmt</div>
+                                        <div class="th">NominalValue</div>
+                                        <div class="th">UnrealizedProfit</div>
+                                        <div class="th">Action</div>
+                                    </div>
+                                </div>
+                                <div class="tbody">{% for item in account.Positions %}{% if item.PositionAmt|float > 0 || item.PositionAmt|float < 0 %}
+                                    <div class="tr" data-customer="{{ customer.ID.Hex() }}">
+                                        <div class="td" data-title="Symbol">{{ item.Symbol }}</div>
+                                        <div class="td{% if item.PositionSide|upper == 'SHORT' %} text-red{% elif item.PositionSide|upper == 'LONG' %} text-green{% else %}{% endif %}" data-title="PositionSide">{{ item.PositionSide }}</div>
+                                        <div class="td" data-title="Leverage">{{ item.Leverage }}</div>
+                                        <div class="td" data-title="EntryPrice">{{ item.EntryPrice }}</div>
+                                        <div class="td" data-title="PositionAmt">{{ item.PositionAmt }}</div>
+                                        <div class="td" data-title="NominalValue">{{ item.PositionAmt|float * item.EntryPrice|float }}</div>
+                                        <div class="td{% if item.UnrealizedProfit > 0.0 %} text-green{% else %} text-red{% endif %}" data-title="UnrealizedProfit">{{ item.UnrealizedProfit }}</div>
+                                        <div class="td" data-title="Action">
+                                            <a href="{% if user.Role == 'Demo' %}#{% else %}/position/close{% endif %}" class="btn btn-danger btn-sm btn-close{% if user.Role == 'Demo' %} disabled{% endif %}" data-customer="{{ customer.ID.Hex() }}" data-symbol="{{ item.Symbol }}" data-positionside="{{ item.PositionSide }}" data-positionamt="{{ item.PositionAmt }}">Close</a>
+                                        </div>
+                                    </div>{% endif %}{% endfor %}
+                                </div>
+                            </div>
+                            <div class="tfoot{% if account.Positions|length > 0 %} d-none{% endif %}">No Data</div>
+                        </div>
+                    </div>
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h4 class="float-left">Open Orders</h4>
+                            </div>
+                            <div class="table{% if orders|length == 0 %} mb-0{% endif %}">
+                                <div class="thead">
+                                    <div class="tr">
+                                        <div class="th">Symbol</div>
+                                        <div class="th">Type</div>
+                                        <div class="th">Side</div>
+                                        <div class="th">PositionSide</div>
+                                        <div class="th">Price</div>
+                                        <div class="th">Quantity</div>
+                                        <div class="th">StopPrice</div>
+                                        <div class="th">Action</div>
+                                    </div>
+                                </div>
+                                <div class="tbody">{% for item in orders %}
+                                    <div class="tr">
+                                        <div class="td" data-title="Symbol">{{ item.Symbol }}</div>
+                                        <div class="td" data-title="Type">{{ item.Type }}</div>
+                                        <div class="td" data-title="Side">{{ item.Side }}</div>
+                                        <div class="td{% if item.PositionSide|upper == 'SHORT' %} text-red{% elif item.PositionSide|upper == 'LONG' %} text-green{% else %}{% endif %}" data-title="PositionSide">{{ item.PositionSide }}</div>
+                                        <div class="td" data-title="Price">{{ item.Price }}</div>
+                                        <div class="td" data-title="Quantity">{{ item.OrigQuantity }}</div>
+                                        <div class="td" data-title="StopPrice">{{ item.StopPrice }}</div>
+                                        <div class="td" data-title="Action">
+                                            <a href="/position/cancel" class="btn btn-danger btn-sm btn-cancel" data-customer="{{ customer.ID.Hex() }}" data-symbol="{{ item.Symbol }}" data-orderid="{{ item.OrderID }}">Cancel</a>
+                                        </div>
+                                    </div>{% endfor %}
+                                </div>
+                            </div>
+                            <div class="tfoot{% if orders|length > 0 %} d-none{% endif %}">No Data</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h4 class="float-left">Balance</h4>
+                            </div>
+                            <div class="table">
+                                <div class="tbody">
+                                    <div class="tr">
+                                        <div class="th" data-title="Capital">Capital</div>
+                                        <div class="td" data-title="Capital">{{ customer.Capital|stringformat:'%.2f' }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="PNL">PNL</div>
+                                        <div class="td" data-title="PNL">{{ account.TotalWalletBalance - customer.Capital }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="ROE">ROE</div>
+                                        <div class="td" data-title="ROE">{{ (account.TotalWalletBalance - customer.Capital) / customer.Capital * 100 }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="FeeTier">FeeTier</div>
+                                        <div class="td" data-title="FeeTier">{{ account.FeeTier }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="CanTrade">CanTrade</div>
+                                        <div class="td" data-title="CanTrade">{{ account.CanTrade }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="CanDeposit">CanDeposit</div>
+                                        <div class="td" data-title="CanDeposit">{{ account.CanDeposit }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="CanWithdraw">CanWithdraw</div>
+                                        <div class="td" data-title="CanWithdraw">{{ account.CanWithdraw }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="Risk">Risk</div>
+                                        <div class="td text-red" data-title="Risk">{{ account.TotalMaintMargin|float / account.TotalMarginBalance|float * 100 }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="MultiAssetsMargin">MultiAssetsMargin</div>
+                                        <div class="td" data-title="MultiAssetsMargin">{{ account.MultiAssetsMargin }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="TotalInitialMargin">TotalInitialMargin</div>
+                                        <div class="td" data-title="TotalInitialMargin">{{ account.TotalInitialMargin }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="TotalMaintMargin">TotalMaintMargin</div>
+                                        <div class="td" data-title="TotalMaintMargin">{{ account.TotalMaintMargin }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="TotalWalletBalance">TotalWalletBalance</div>
+                                        <div class="td" data-title="TotalWalletBalance">{{ account.TotalWalletBalance }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="TotalUnrealizedProfit">TotalUnrealizedProfit</div>
+                                        <div class="td" data-title="TotalUnrealizedProfit">{{ account.TotalUnrealizedProfit }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="TotalMarginBalance">TotalMarginBalance</div>
+                                        <div class="td" data-title="TotalMarginBalance">{{ account.TotalMarginBalance }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="TotalPositionInitialMargin">TotalPositionInitialMargin</div>
+                                        <div class="td" data-title="TotalPositionInitialMargin">{{ account.TotalPositionInitialMargin }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="TotalOpenOrderInitialMargin">TotalOpenOrderInitialMargin</div>
+                                        <div class="td" data-title="TotalOpenOrderInitialMargin">{{ account.TotalOpenOrderInitialMargin }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="TotalCrossWalletBalance">TotalCrossWalletBalance</div>
+                                        <div class="td" data-title="TotalCrossWalletBalance">{{ account.TotalCrossWalletBalance }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="TotalCrossUnPnl">TotalCrossUnPnl</div>
+                                        <div class="td" data-title="TotalCrossUnPnl">{{ account.TotalCrossUnPnl }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="AvailableBalance">AvailableBalance</div>
+                                        <div class="td" data-title="AvailableBalance">{{ account.AvailableBalance }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="MaxWithdrawAmount">MaxWithdrawAmount</div>
+                                        <div class="td" data-title="MaxWithdrawAmount">{{ account.MaxWithdrawAmount }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}

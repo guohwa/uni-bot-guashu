@@ -1,0 +1,36 @@
+{% extends "../base.html" %}
+{% block content %}
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title">
+                        <h4 class="float-left">User</h4>
+                        <a href="/user/add" class="btn btn-info btn-sm float-right">Add</a>
+                    </div>
+                    <div class="table{% if (items|length == 0) %} mb-0{% endif %}">
+                        <div class="thead">
+                            <div class="tr">
+                                <div class="th">Username</div>
+                                <div class="th">Role</div>
+                                <div class="th">Status</div>
+                                <div class="th">Action</div>
+                            </div>
+                        </div>
+                        <div class="tbody">{% for item in items %}
+                            <div class="tr">
+                                <div class="td" data-title="Username">{{ item.Username }}</div>
+                                <div class="td" data-title="Role">{{ item.Role }}</div>
+                                <div class="td" data-title="Status">{{ item.Status }}</div>
+                                <div class="td" data-title="Action">
+                                    <a href="/user/edit/{{ item.ID.Hex() }}" class="btn btn-primary btn-sm">Edit</a>
+                                </div>
+                            </div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="tfoot{% if (items|length > 0) %} d-none{% endif %}">No Data</div>
+                    <nav class="pagger" aria-label="Page navigation" data-count="{{ count }}" data-page="{{ page }}" data-limit="{{ limit }}" data-href="/user">
+                    </nav>
+                </div>
+            </div>
+        </div>
+{% endblock %}
