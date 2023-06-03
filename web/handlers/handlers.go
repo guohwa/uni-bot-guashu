@@ -17,6 +17,7 @@ var handlers []Handler = []Handler{
 	customerHandler,
 	userHandler,
 	passwordHandler,
+	profileHandler,
 }
 
 func Handle(router *gin.Engine) {
