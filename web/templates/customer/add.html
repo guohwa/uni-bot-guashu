@@ -9,10 +9,6 @@
                             <label for="inputName">Name</label>
                             <input class="form-control" id="inputName" name="name" placeholder="Name" autocomplete="off" value="" autofocus>
                         </div>
-                        <div class="form-group">
-                            <label for="inputCapital">Capital</label>
-                            <input class="form-control" id="inputCapital" name="capital" placeholder="Capital" autocomplete="off" value="">
-                        </div>
                         <div class="form-group toggle-password">
                             <label for="inputApiKey">ApiKey</label>
                             <input type="password" class="form-control" id="inputApiKey" name="apiKey" placeholder="Api Key" autocomplete="off" value=""{% if user.Role == 'Demo' %} disabled{% endif %}>
@@ -28,6 +24,34 @@
                                 <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
                                 <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
                             </svg>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputBase">Base</label>
+                            <input class="form-control" id="inputBase" name="base" placeholder="Base" autocomplete="off" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputCapital">Capital</label>
+                            <input class="form-control" id="inputCapital" name="capital" placeholder="Capital" autocomplete="off" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputRatio">Ratio</label>
+                            <input class="form-control" id="inputRatio" name="ratio" placeholder="Ratio" autocomplete="off" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputLevel1">Level 1</label>
+                            <input class="form-control" id="inputLevel1" name="level1" placeholder="Level 1" autocomplete="off" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputLevel2">Level 2</label>
+                            <input class="form-control" id="inputLevel2" name="level2" placeholder="Level 2" autocomplete="off" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputMode">Mode</label>
+                            <select class="form-control select2" id="inputMode" name="mode" placeholder="Mode" data-placeholder="Mode" style="width: 100%;">
+                                <option></option>
+                                <option value="Capital" selected>Capital</option>
+                                <option value="Equity">Equity</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="inputStatus">Status</label>

@@ -11,7 +11,13 @@
                         <div class="thead">
                             <div class="tr">
                                 <div class="th">Name</div>
+                                <div class="th">Token</div>
+                                <div class="th">Base</div>
                                 <div class="th">Capital</div>
+                                <div class="th">Ratio</div>
+                                <div class="th">Level1</div>
+                                <div class="th">Level2</div>
+                                <div class="th">Mode</div>
                                 <div class="th">Status</div>
                                 <div class="th">Action</div>
                             </div>
@@ -19,7 +25,13 @@
                         <div class="tbody">{% for item in items %}
                             <div class="tr">
                                 <div class="td" data-title="Name">{{ item.Name }}</div>
+                                <div class="td" data-title="Token">{{ item.Token }}</div>
+                                <div class="td" data-title="Base">{{ item.Base|stringformat:'%.2f' }}</div>
                                 <div class="td" data-title="Capital">{{ item.Capital|stringformat:'%.2f' }}</div>
+                                <div class="td" data-title="Ratio">{{ item.Ratio|stringformat:'%.2f' }}</div>
+                                <div class="td" data-title="Level1">{{ item.Level1|stringformat:'%.2f' }}</div>
+                                <div class="td" data-title="Level2">{{ item.Level2|stringformat:'%.2f' }}</div>
+                                <div class="td" data-title="Mode">{{ item.Mode }}</div>
                                 <div class="td" data-title="Status">{{ item.Status }}</div>
                                 <div class="td" data-title="Action">
                                     <a href="{% if user.Role == 'Demo' %}#{% else %}/customer/edit/{{ item.ID.Hex() }}{% endif %}" class="btn btn-primary btn-sm{% if user.Role == 'Demo' %} disabled{% endif %}">Edit</a>

@@ -11,6 +11,7 @@ import (
 	"bot/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jaevor/go-nanoid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -102,12 +103,24 @@ func (handler *customer) Handle(router *gin.Engine) {
 			return
 		}
 
+		token, err := nanoid.CustomASCII("0123456789abcdefghijklmnopqrstuvwxyz", 10)
+		if err != nil {
+			resp.Error(err)
+			return
+		}
+
 		saved := bson.M{
 			"userId":    user.ID,
 			"name":      form.Name,
-			"capital":   form.Capital,
+			"token":     token(),
 			"apiKey":    form.ApiKey,
 			"apiSecret": form.ApiSecret,
+			"base":      form.Base,
+			"capital":   form.Capital,
+			"ratio":     form.Ratio,
+			"level1":    form.Level1,
+			"level2":    form.Level2,
+			"mode":      form.Mode,
 			"status":    form.Status,
 		}
 		if _, err := models.CustomerCollection.InsertOne(
@@ -179,9 +192,14 @@ func (handler *customer) Handle(router *gin.Engine) {
 
 		update := bson.M{"$set": bson.M{
 			"name":      form.Name,
-			"capital":   form.Capital,
 			"apiKey":    form.ApiKey,
 			"apiSecret": form.ApiSecret,
+			"base":      form.Base,
+			"capital":   form.Capital,
+			"ratio":     form.Ratio,
+			"level1":    form.Level1,
+			"level2":    form.Level2,
+			"mode":      form.Mode,
 			"status":    form.Status,
 		}}
 		err = models.CustomerCollection.FindOneAndUpdate(
