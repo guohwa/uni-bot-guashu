@@ -1,0 +1,43 @@
+{% extends "../base.html" %}
+{% block content %}
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title">
+                        <h4 class="float-left">Command</h4>
+                    </div>
+                    <div class="table{% if (items|length == 0) %} mb-0{% endif %}">
+                        <div class="thead">
+                            <div class="tr">
+                                <div class="th">Action</div>
+                                <div class="th">Symbol</div>
+                                <div class="th">Side</div>
+                                <div class="th">Base</div>
+                                <div class="th">Quantity</div>
+                                <div class="th">Comment</div>
+                                <div class="th">Status</div>
+                                <div class="th">Reason</div>
+                                <div class="th">Time</div>
+                            </div>
+                        </div>
+                        <div class="tbody">{% for item in items %}
+                            <div class="tr">
+                                <div class="td" data-title="Action">{{ item.Action }}</div>
+                                <div class="td" data-title="Symbol">{{ item.Symbol }}</div>
+                                <div class="td" data-title="Side">{{ item.Side }}</div>
+                                <div class="td" data-title="Base">{{ item.Base|stringformat:'%.2f' }}</div>
+                                <div class="td" data-title="Quantity">{{ item.Quantity|stringformat:'%.2f' }}</div>
+                                <div class="td" data-title="Comment">{{ item.Comment }}</div>
+                                <div class="td" data-title="Status">{{ item.Status }}</div>
+                                <div class="td" data-title="Reason">{{ item.Reason }}</div>
+                                <div class="td" data-title="Time">{{ item.Time }}</div>
+                            </div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="tfoot{% if (items|length > 0) %} d-none{% endif %}">No Data</div>
+                    <nav class="pagger" aria-label="Page navigation" data-count="{{ count }}" data-page="{{ page }}" data-limit="{{ limit }}" data-href="/customer">
+                    </nav>
+                </div>
+            </div>
+        </div>
+{% endblock %}

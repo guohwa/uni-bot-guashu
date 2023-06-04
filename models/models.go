@@ -17,6 +17,7 @@ import (
 var Client *mongo.Client
 var (
 	UserCollection     *mongo.Collection
+	CommandCollection  *mongo.Collection
 	CustomerCollection *mongo.Collection
 	SessionCollection  *mongo.Collection
 )
@@ -32,6 +33,7 @@ func init() {
 	}
 
 	UserCollection = Client.Database(config.Config.Database.Name).Collection("users")
+	CommandCollection = Client.Database(config.Config.Database.Name).Collection("commands")
 	CustomerCollection = Client.Database(config.Config.Database.Name).Collection("customers")
 	SessionCollection = Client.Database(config.Config.Database.Name).Collection("sessions")
 
