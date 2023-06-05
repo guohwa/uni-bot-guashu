@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"bot/config"
 	"bot/forms"
 	"bot/log"
 	"bot/models"
 	"context"
+	"net"
 	"net/http"
 	"strings"
 
@@ -20,6 +22,10 @@ type tv struct {
 
 func (handler *tv) Handle(router *gin.Engine) {
 	router.POST("/tv/:token", func(ctx *gin.Context) {
+		if !handler.authenticate(ctx) {
+			return
+		}
+
 		token := strings.TrimLeft(ctx.Param("id"), "/")
 		filter := bson.M{
 			"token": token,
@@ -46,5 +52,29 @@ func (handler *tv) Handle(router *gin.Engine) {
 		}
 
 	})
+}
 
+func (handler *tv) authenticate(ctx *gin.Context) bool {
+	remoteAddr := ctx.Request.RemoteAddr
+	if ip := ctx.Request.Header.Get("X-Real-IP"); ip != "" {
+		remoteAddr = ip
+	} else if ip := ctx.Request.Header.Get("X-Forwarded-For"); ip != "" {
+		remoteAddr = ip
+	} else {
+		ip, _, err := net.SplitHostPort(remoteAddr)
+		if err != nil {
+			log.Error(err)
+			ctx.String(http.StatusInternalServerError, "internal error")
+			return false
+		}
+		remoteAddr = ip
+	}
+
+	if !strings.Contains(config.App.WhiteList, remoteAddr) {
+		log.Errorf("illegal access, remote address: %s", remoteAddr)
+		ctx.String(http.StatusInternalServerError, "internal error")
+		return false
+	}
+
+	return true
 }

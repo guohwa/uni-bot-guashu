@@ -17,10 +17,11 @@ type database struct {
 }
 
 type app struct {
-	Title  string   `json:"title"`
-	Mode   string   `json:"mode"`
-	Listen string   `json:"listen"`
-	Trust  []string `json:"trust"`
+	Title     string   `json:"title"`
+	Mode      string   `json:"mode"`
+	Listen    string   `json:"listen"`
+	Trust     []string `json:"trust"`
+	WhiteList string   `json:"whiteList"`
 }
 
 type config struct {
@@ -28,12 +29,18 @@ type config struct {
 	Database database `json:"database"`
 }
 
-var Config = &config{}
+var (
+	App      = app{}
+	Database = database{}
+)
 
 func init() {
-	if err := Config.Load(); err != nil {
+	var c = config{}
+	if err := c.Load(); err != nil {
 		log.Fatal(err)
 	}
+	App = c.App
+	Database = c.Database
 }
 
 func (c *config) Load() error {

@@ -14,12 +14,12 @@ import (
 )
 
 func Start() {
-	if config.Config.App.Mode == "PROD" {
+	if config.App.Mode == "PROD" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
 	router := gin.Default()
-	router.SetTrustedProxies(config.Config.App.Trust)
+	router.SetTrustedProxies(config.App.Trust)
 
 	router.Static("/static", "./web/static")
 	router.StaticFile("/favicon.ico", "./web/static/favicon.ico")
@@ -38,6 +38,6 @@ func Start() {
 
 	handlers.Handle(router)
 
-	log.Info("Server listen on " + config.Config.App.Listen)
-	router.Run(config.Config.App.Listen)
+	log.Info("Server listen on " + config.App.Listen)
+	router.Run(config.App.Listen)
 }

@@ -27,15 +27,15 @@ func init() {
 	defer cancel()
 
 	var err error
-	Client, err = mongo.Connect(ctx, options.Client().ApplyURI(config.Config.Database.Host))
+	Client, err = mongo.Connect(ctx, options.Client().ApplyURI(config.Database.Host))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	UserCollection = Client.Database(config.Config.Database.Name).Collection("users")
-	CommandCollection = Client.Database(config.Config.Database.Name).Collection("commands")
-	CustomerCollection = Client.Database(config.Config.Database.Name).Collection("customers")
-	SessionCollection = Client.Database(config.Config.Database.Name).Collection("sessions")
+	UserCollection = Client.Database(config.Database.Name).Collection("users")
+	CommandCollection = Client.Database(config.Database.Name).Collection("commands")
+	CustomerCollection = Client.Database(config.Database.Name).Collection("customers")
+	SessionCollection = Client.Database(config.Database.Name).Collection("sessions")
 
 	res := UserCollection.FindOne(context.Background(), bson.M{"username": "admin"})
 	if err = res.Err(); err != nil {

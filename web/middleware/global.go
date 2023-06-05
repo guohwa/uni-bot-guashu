@@ -9,7 +9,7 @@ import (
 
 func Global() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		ctx.Set("title", config.Config.App.Title)
+		ctx.Set("title", config.App.Title)
 		ctx.Set("now", time.Now())
 	}
 }
