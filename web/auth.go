@@ -2,6 +2,7 @@ package web
 
 var auth map[string]map[string]bool = map[string]map[string]bool{
 	"Public": {
+		"tv":      true,
 		"account": true,
 		"captcha": true,
 	},

@@ -119,7 +119,6 @@ func (handler *customer) Handle(router *gin.Engine) {
 			"scale":     form.Scale,
 			"level1":    form.Level1,
 			"level2":    form.Level2,
-			"mode":      form.Mode,
 			"status":    form.Status,
 		}
 		if _, err := models.CustomerCollection.InsertOne(
@@ -197,7 +196,6 @@ func (handler *customer) Handle(router *gin.Engine) {
 			"scale":     form.Scale,
 			"level1":    form.Level1,
 			"level2":    form.Level2,
-			"mode":      form.Mode,
 			"status":    form.Status,
 		}}
 		err = models.CustomerCollection.FindOneAndUpdate(

@@ -15,6 +15,5 @@ type Customer struct {
 	Scale     float64            `bson:"scale"`
 	Level1    float64            `bson:"level1"`
 	Level2    float64            `bson:"level2"`
-	Mode      string             `bson:"mode"`
 	Status    string             `bson:"status"`
 }

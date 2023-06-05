@@ -9,10 +9,13 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var tvHandler = &tv{}
@@ -26,10 +29,11 @@ func (handler *tv) Handle(router *gin.Engine) {
 			return
 		}
 
-		token := strings.TrimLeft(ctx.Param("id"), "/")
+		token := strings.TrimLeft(ctx.Param("token"), "/")
 		filter := bson.M{
 			"token": token,
 		}
+		log.Info(token)
 
 		var customer models.Customer
 		if err := models.CustomerCollection.FindOne(context.Background(), filter).Decode(&customer); err != nil {
@@ -51,27 +55,59 @@ func (handler *tv) Handle(router *gin.Engine) {
 			return
 		}
 
+		quantity := customer.Capital * customer.Scale / form.Capital * form.Size
+
+		saved := models.Command{
+			ID:         primitive.NewObjectID(),
+			CustomerID: customer.ID,
+			Action:     form.Action,
+			Symbol:     form.Symbol,
+			Side:       form.Side,
+			Capital:    form.Capital,
+			Size:       form.Size,
+			Quantity:   quantity,
+			Comment:    form.Comment,
+			Status:     "NEW",
+			Reason:     "",
+			Time:       time.Now(),
+		}
+		if _, err := models.CommandCollection.InsertOne(
+			context.TODO(),
+			saved,
+			options.InsertOne(),
+		); err != nil {
+			log.Error(err)
+			ctx.String(http.StatusInternalServerError, "internal error")
+			return
+		}
+
+		ctx.String(http.StatusOK, "ok")
 	})
 }
 
 func (handler *tv) authenticate(ctx *gin.Context) bool {
-	remoteAddr := ctx.Request.RemoteAddr
-	if ip := ctx.Request.Header.Get("X-Real-IP"); ip != "" {
-		remoteAddr = ip
-	} else if ip := ctx.Request.Header.Get("X-Forwarded-For"); ip != "" {
-		remoteAddr = ip
-	} else {
-		ip, _, err := net.SplitHostPort(remoteAddr)
+	addr, port, err := func(req *http.Request) (string, string, error) {
+		addr, port, err := net.SplitHostPort(req.RemoteAddr)
 		if err != nil {
-			log.Error(err)
-			ctx.String(http.StatusInternalServerError, "internal error")
-			return false
+			return addr, port, err
 		}
-		remoteAddr = ip
+		if addr := req.Header.Get("X-Real-IP"); addr != "" {
+			return addr, port, nil
+		}
+		if addr := req.Header.Get("X-Forwarded-For"); addr != "" {
+			return addr, port, nil
+		}
+		return addr, port, err
+	}(ctx.Request)
+
+	if err != nil {
+		log.Error(err)
+		ctx.String(http.StatusInternalServerError, "internal error")
+		return false
 	}
 
-	if !strings.Contains(config.App.WhiteList, remoteAddr) {
-		log.Errorf("illegal access, remote address: %s", remoteAddr)
+	if !strings.Contains(config.App.WhiteList, addr) {
+		log.Errorf("illegal access, remote address: %s, port: %s", addr, port)
 		ctx.String(http.StatusInternalServerError, "internal error")
 		return false
 	}

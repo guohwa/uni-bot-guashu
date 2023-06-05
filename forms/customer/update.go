@@ -8,6 +8,5 @@ type Update struct {
 	Scale     float64 `form:"scale" binding:"required"`
 	Level1    float64 `form:"level1" binding:"required"`
 	Level2    float64 `form:"level2" binding:"required"`
-	Mode      string  `form:"mode" binding:"required,oneof=Capital Equity"`
 	Status    string  `form:"status" binding:"required,oneof=Enable Disable"`
 }

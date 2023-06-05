@@ -18,21 +18,27 @@
                                 <h4 class="float-left">Commands</h4>
                             </div>
                             <div class="table{% if commands|length == 0 %} mb-0{% endif %}">
-                                <div class="tr">
-                                    <div class="th">Action</div>
-                                    <div class="th">Symbol</div>
-                                    <div class="th">Side</div>
-                                    <div class="th">Quantity</div>
-                                    <div class="th">Comment</div>
-                                    <div class="th">Status</div>
-                                    <div class="th">Reason</div>
-                                    <div class="th">Time</div>
+                                <div class="thead">
+                                    <div class="tr">
+                                        <div class="th">Action</div>
+                                        <div class="th">Symbol</div>
+                                        <div class="th">Side</div>
+                                        <div class="th">Capital</div>
+                                        <div class="th">Size</div>
+                                        <div class="th">Quantity</div>
+                                        <div class="th">Comment</div>
+                                        <div class="th">Status</div>
+                                        <div class="th">Reason</div>
+                                        <div class="th">Time</div>
+                                    </div>
                                 </div>
                                 <div class="tbody">{% for item in commands %}
                                     <div class="tr">
                                         <div class="td" data-title="Action">{{ item.Action }}</div>
                                         <div class="td" data-title="Symbol">{{ item.Symbol }}</div>
                                         <div class="td" data-title="Side">{{ item.Side }}</div>
+                                        <div class="td" data-title="Capital">{{ item.Capital|stringformat:'%.2f' }}</div>
+                                        <div class="td" data-title="Size">{{ item.Size|stringformat:'%.2f' }}</div>
                                         <div class="td" data-title="Quantity">{{ item.Quantity|stringformat:'%.2f' }}</div>
                                         <div class="td" data-title="Comment">{{ item.Comment }}</div>
                                         <div class="td" data-title="Status">{{ item.Status }}</div>
@@ -42,6 +48,8 @@
                                 </div>
                             </div>
                             <div class="tfoot{% if commands|length > 0 %} d-none{% endif %}">No Data</div>
+                            <nav class="pagger" aria-label="Page navigation" data-count="{{ count }}" data-page="{{ page }}" data-limit="{{ limit }}" data-href="/command">
+                            </nav>
                         </div>
                     </div>
                 </div>
