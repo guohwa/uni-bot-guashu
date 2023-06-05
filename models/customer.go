@@ -11,9 +11,8 @@ type Customer struct {
 	Token     string             `bson:"token"`
 	ApiKey    string             `bson:"apiKey"`
 	ApiSecret string             `bson:"apiSecret"`
-	Base      float64            `bson:"base"`
 	Capital   float64            `bson:"capital"`
-	Ratio     float64            `bson:"ratio"`
+	Scale     float64            `bson:"scale"`
 	Level1    float64            `bson:"level1"`
 	Level2    float64            `bson:"level2"`
 	Mode      string             `bson:"mode"`

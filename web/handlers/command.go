@@ -4,11 +4,14 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
+	"bot/log"
 	"bot/models"
 	"bot/web/handlers/response"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -20,7 +23,7 @@ type command struct {
 }
 
 func (handler *command) Handle(router *gin.Engine) {
-	router.GET("/command", func(ctx *gin.Context) {
+	router.GET("/command/*id", func(ctx *gin.Context) {
 		user, ok := getUser(ctx)
 		if !ok {
 			ctx.Redirect(http.StatusFound, "/account/login")
@@ -29,8 +32,57 @@ func (handler *command) Handle(router *gin.Engine) {
 		}
 
 		resp := response.New(ctx)
-		filter := bson.M{
+
+		customerFilter := bson.M{
 			"userId": user.ID,
+			"status": "Enable",
+		}
+		customerCursor, err := models.CustomerCollection.Find(
+			context.TODO(),
+			customerFilter, options.Find(),
+		)
+		if err != nil {
+			resp.Error(err)
+			return
+		}
+
+		var items []models.Customer
+		if err = customerCursor.All(context.TODO(), &items); err != nil {
+			resp.Error(err)
+			return
+		}
+
+		sId := strings.TrimLeft(ctx.Param("id"), "/")
+		session := sessions.Default(ctx)
+		if sId == "" {
+			cId := session.Get("customer-id")
+			if cId != nil {
+				if id, ok := cId.(string); ok {
+					sId = id
+				}
+			}
+		} else {
+			session.Set("customer-id", sId)
+			if err := session.Save(); err != nil {
+				log.Error(err)
+			}
+		}
+
+		var customer models.Customer
+		if sId != "" {
+			for _, item := range items {
+				if item.ID.Hex() == sId {
+					customer = item
+				}
+			}
+		} else {
+			if len(items) > 0 {
+				customer = items[0]
+			}
+		}
+
+		filter := bson.M{
+			"customerId": customer.ID,
 		}
 
 		count, err := models.CommandCollection.CountDocuments(
@@ -61,17 +113,19 @@ func (handler *command) Handle(router *gin.Engine) {
 			return
 		}
 
-		var items []models.Command
-		if err = cursor.All(context.TODO(), &items); err != nil {
+		var commands []models.Command
+		if err = cursor.All(context.TODO(), &commands); err != nil {
 			resp.Error(err)
 			return
 		}
 
 		resp.HTML("command/index.html", response.Context{
-			"page":  page,
-			"count": count,
-			"limit": limit,
-			"items": items,
+			"items":    items,
+			"page":     page,
+			"count":    count,
+			"limit":    limit,
+			"commands": commands,
+			"customer": customer,
 		})
 	})
 }

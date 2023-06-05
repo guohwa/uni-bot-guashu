@@ -23,6 +23,7 @@ var handlers []Handler = []Handler{
 	tradeHandler,
 	incomeHandler,
 	commandHandler,
+	tvHandler,
 }
 
 func Handle(router *gin.Engine) {

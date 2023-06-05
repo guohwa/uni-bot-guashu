@@ -1,42 +1,49 @@
 {% extends "../base.html" %}
 {% block content %}
         <div class="container-fluid">
-            <div class="card">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h4 class="float-left">Command</h4>
-                    </div>
-                    <div class="table{% if (items|length == 0) %} mb-0{% endif %}">
-                        <div class="thead">
-                            <div class="tr">
-                                <div class="th">Action</div>
-                                <div class="th">Symbol</div>
-                                <div class="th">Side</div>
-                                <div class="th">Base</div>
-                                <div class="th">Quantity</div>
-                                <div class="th">Comment</div>
-                                <div class="th">Status</div>
-                                <div class="th">Reason</div>
-                                <div class="th">Time</div>
+            <div class="row">
+                <div class="col-sm-2">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="nav flex-column nav-pills" role="tablist" aria-orientation="vertical">{% for item in items %}
+                                <a class="nav-link{% if item.ID == customer.ID %} active{% endif %}" href="/command/{{ item.ID.Hex() }}" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">{{ item.Name }}</a>{% endfor %}
                             </div>
                         </div>
-                        <div class="tbody">{% for item in items %}
-                            <div class="tr">
-                                <div class="td" data-title="Action">{{ item.Action }}</div>
-                                <div class="td" data-title="Symbol">{{ item.Symbol }}</div>
-                                <div class="td" data-title="Side">{{ item.Side }}</div>
-                                <div class="td" data-title="Base">{{ item.Base|stringformat:'%.2f' }}</div>
-                                <div class="td" data-title="Quantity">{{ item.Quantity|stringformat:'%.2f' }}</div>
-                                <div class="td" data-title="Comment">{{ item.Comment }}</div>
-                                <div class="td" data-title="Status">{{ item.Status }}</div>
-                                <div class="td" data-title="Reason">{{ item.Reason }}</div>
-                                <div class="td" data-title="Time">{{ item.Time }}</div>
-                            </div>{% endfor %}
+                    </div>
+                </div>
+                <div class="col-sm-10">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h4 class="float-left">Commands</h4>
+                            </div>
+                            <div class="table{% if commands|length == 0 %} mb-0{% endif %}">
+                                <div class="tr">
+                                    <div class="th">Action</div>
+                                    <div class="th">Symbol</div>
+                                    <div class="th">Side</div>
+                                    <div class="th">Quantity</div>
+                                    <div class="th">Comment</div>
+                                    <div class="th">Status</div>
+                                    <div class="th">Reason</div>
+                                    <div class="th">Time</div>
+                                </div>
+                                <div class="tbody">{% for item in commands %}
+                                    <div class="tr">
+                                        <div class="td" data-title="Action">{{ item.Action }}</div>
+                                        <div class="td" data-title="Symbol">{{ item.Symbol }}</div>
+                                        <div class="td" data-title="Side">{{ item.Side }}</div>
+                                        <div class="td" data-title="Quantity">{{ item.Quantity|stringformat:'%.2f' }}</div>
+                                        <div class="td" data-title="Comment">{{ item.Comment }}</div>
+                                        <div class="td" data-title="Status">{{ item.Status }}</div>
+                                        <div class="td" data-title="Reason">{{ item.Reason }}</div>
+                                        <div class="td" data-title="Time">{{ item.Time|time:'2006-01-02 15:04:05' }}</div>
+                                    </div>{% endfor %}
+                                </div>
+                            </div>
+                            <div class="tfoot{% if commands|length > 0 %} d-none{% endif %}">No Data</div>
                         </div>
                     </div>
-                    <div class="tfoot{% if (items|length > 0) %} d-none{% endif %}">No Data</div>
-                    <nav class="pagger" aria-label="Page navigation" data-count="{{ count }}" data-page="{{ page }}" data-limit="{{ limit }}" data-href="/customer">
-                    </nav>
                 </div>
             </div>
         </div>

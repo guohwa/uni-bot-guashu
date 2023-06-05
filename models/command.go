@@ -12,10 +12,9 @@ type Command struct {
 	Action     string             `bson:"action"`
 	Symbol     string             `bson:"symbol"`
 	Side       string             `bson:"side"`
-	Base       float64            `bson:"base"`
 	Quantity   float64            `bson:"quantity"`
 	Comment    string             `bson:"comment"`
 	Status     string             `bson:"status"`
 	Reason     string             `bson:"reason"`
-	Time       time.Time          `bson:"reason"`
+	Time       time.Time          `bson:"time"`
 }
