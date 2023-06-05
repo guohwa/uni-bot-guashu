@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bot/config"
+	"bot/exchange"
 	"bot/forms"
 	"bot/log"
 	"bot/models"
@@ -55,13 +56,29 @@ func (handler *tv) Handle(router *gin.Engine) {
 			return
 		}
 
+		sections := strings.Split(form.Symbol, ":")
+		if len(sections) < 2 {
+			log.Error("invalid symbol")
+			ctx.String(http.StatusBadRequest, "invalid symbol")
+			return
+		}
+		symbol := strings.TrimSuffix(sections[1], ".P")
+		exname := sections[0]
+		ex := exchange.New(exname)
+		if ex == nil {
+			log.Error("unsupported exchange")
+			ctx.String(http.StatusBadRequest, "unsupported exchange")
+			return
+		}
+
 		quantity := customer.Capital * customer.Scale / form.Capital * form.Size
 
-		saved := models.Command{
+		command := models.Command{
 			ID:         primitive.NewObjectID(),
 			CustomerID: customer.ID,
+			Exchange:   exname,
 			Action:     form.Action,
-			Symbol:     form.Symbol,
+			Symbol:     symbol,
 			Side:       form.Side,
 			Capital:    form.Capital,
 			Size:       form.Size,
@@ -73,13 +90,15 @@ func (handler *tv) Handle(router *gin.Engine) {
 		}
 		if _, err := models.CommandCollection.InsertOne(
 			context.TODO(),
-			saved,
+			command,
 			options.InsertOne(),
 		); err != nil {
 			log.Error(err)
 			ctx.String(http.StatusInternalServerError, "internal error")
 			return
 		}
+
+		go ex.Execute(customer, command)
 
 		ctx.String(http.StatusOK, "ok")
 	})

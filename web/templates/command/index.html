@@ -20,6 +20,7 @@
                             <div class="table{% if commands|length == 0 %} mb-0{% endif %}">
                                 <div class="thead">
                                     <div class="tr">
+                                        <div class="th">Exchange</div>
                                         <div class="th">Action</div>
                                         <div class="th">Symbol</div>
                                         <div class="th">Side</div>
@@ -34,6 +35,7 @@
                                 </div>
                                 <div class="tbody">{% for item in commands %}
                                     <div class="tr">
+                                        <div class="td" data-title="Exchange">{{ item.Exchange }}</div>
                                         <div class="td" data-title="Action">{{ item.Action }}</div>
                                         <div class="td" data-title="Symbol">{{ item.Symbol }}</div>
                                         <div class="td" data-title="Side">{{ item.Side }}</div>

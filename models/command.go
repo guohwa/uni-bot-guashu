@@ -9,6 +9,7 @@ import (
 type Command struct {
 	ID         primitive.ObjectID `bson:"_id"`
 	CustomerID primitive.ObjectID `bson:"customerId"`
+	Exchange   string             `bson:"exchange"`
 	Action     string             `bson:"action"`
 	Symbol     string             `bson:"symbol"`
 	Side       string             `bson:"side"`
