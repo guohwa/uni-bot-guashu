@@ -1,24 +1,25 @@
 package exchange
 
 import (
+	"bot/exchange/binance"
+	"bot/exchange/common"
+	"bot/exchange/okx"
 	"bot/models"
 )
 
-type Exchange interface {
-	Execute(customer models.Customer, command models.Command)
+var exchanges map[string]common.Constructor = map[string]common.Constructor{
+	"BINANCE": binance.New,
+	"OKX":     okx.New,
 }
 
-type Constructor func() Exchange
-
-var exchanges map[string]Constructor = map[string]Constructor{
-	"BINANCE": NewBinance,
-	"OKX":     NewOkx,
-}
-
-func New(name string) Exchange {
+func New(name string, customer models.Customer, command models.Command) common.Exchange {
 	if constructor, ok := exchanges[name]; ok {
-		return constructor()
+		return constructor(customer, command)
 	}
 
 	return nil
+}
+
+func Support(name string) bool {
+	return exchanges[name] != nil
 }

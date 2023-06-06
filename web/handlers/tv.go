@@ -34,7 +34,6 @@ func (handler *tv) Handle(router *gin.Engine) {
 		filter := bson.M{
 			"token": token,
 		}
-		log.Info(token)
 
 		var customer models.Customer
 		if err := models.CustomerCollection.FindOne(context.Background(), filter).Decode(&customer); err != nil {
@@ -64,8 +63,7 @@ func (handler *tv) Handle(router *gin.Engine) {
 		}
 		symbol := strings.TrimSuffix(sections[1], ".P")
 		exname := sections[0]
-		ex := exchange.New(exname)
-		if ex == nil {
+		if !exchange.Support(exname) {
 			log.Error("unsupported exchange")
 			ctx.String(http.StatusBadRequest, "unsupported exchange")
 			return
@@ -98,7 +96,7 @@ func (handler *tv) Handle(router *gin.Engine) {
 			return
 		}
 
-		go ex.Execute(customer, command)
+		go exchange.New(exname, customer, command).Execute()
 
 		ctx.String(http.StatusOK, "ok")
 	})
@@ -126,8 +124,8 @@ func (handler *tv) authenticate(ctx *gin.Context) bool {
 	}
 
 	if !strings.Contains(config.App.WhiteList, addr) {
-		log.Errorf("illegal access, remote address: %s, port: %s", addr, port)
-		ctx.String(http.StatusInternalServerError, "internal error")
+		log.Errorf("unauthorized, remote address: %s, port: %s", addr, port)
+		ctx.String(http.StatusUnauthorized, "unauthorized")
 		return false
 	}
 

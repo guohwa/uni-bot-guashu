@@ -8,6 +8,7 @@ import (
 	"bot/forms"
 	"bot/log"
 	"bot/models"
+	"bot/utils"
 	"bot/web/handlers/response"
 
 	"github.com/gin-contrib/sessions"
@@ -152,15 +153,16 @@ func (handler *position) Handle(router *gin.Engine) {
 			side = futures.SideTypeSell
 		}
 		positionSide := futures.PositionSideType(form.PositionSide)
-		quantity := func(amt string) string {
-			if amt[0:1] == "-" {
-				return amt[1:]
-			}
-			return amt
-		}(form.PositionAmt)
+		quantity := utils.Abs(form.PositionAmt)
 
 		client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
-		_, err = client.NewCreateOrderService().Symbol(form.Symbol).Type(futures.OrderTypeMarket).Side(side).PositionSide(positionSide).Quantity(quantity).Do(context.Background())
+		_, err = client.NewCreateOrderService().
+			Symbol(form.Symbol).
+			Type(futures.OrderTypeMarket).
+			Side(side).
+			PositionSide(positionSide).
+			Quantity(quantity).
+			Do(context.Background())
 		if err != nil {
 			resp.Error(err)
 			return
