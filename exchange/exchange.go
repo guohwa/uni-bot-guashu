@@ -7,7 +7,7 @@ import (
 	"bot/models"
 )
 
-var exchanges map[string]common.Constructor = map[string]common.Constructor{
+var exchanges = map[string]common.Constructor{
 	"BINANCE": binance.New,
 	"OKX":     okx.New,
 }
