@@ -81,7 +81,7 @@ func (handler *tv) Handle(router *gin.Engine) {
 			Comment:    form.Comment,
 			Status:     "NEW",
 			Reason:     "",
-			Time:       time.Now(),
+			Time:       time.Now().UTC().UnixMilli(),
 		}
 		if _, err := models.CommandCollection.InsertOne(
 			context.TODO(),

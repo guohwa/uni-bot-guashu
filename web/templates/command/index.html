@@ -43,7 +43,7 @@
                                         <div class="td" data-title="Comment">{{ item.Comment }}</div>
                                         <div class="td" data-title="Status">{{ item.Status }}</div>
                                         <div class="td" data-title="Reason">{{ item.Reason }}</div>
-                                        <div class="td" data-title="Time">{{ item.Time|time:'2006-01-02 15:04:05' }}</div>
+                                        <div class="td" data-title="Time">{{ item.Time|unixmilli|time:"2006-01-02 15:04:05" }}</div>
                                     </div>{% endfor %}
                                 </div>
                             </div>

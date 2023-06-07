@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"github.com/uncle-gua/gobinance/futures"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -19,5 +17,5 @@ type Command struct {
 	Comment    string                   `bson:"comment"`
 	Status     string                   `bson:"status"`
 	Reason     string                   `bson:"reason"`
-	Time       time.Time                `bson:"time"`
+	Time       int64                    `bson:"time"`
 }

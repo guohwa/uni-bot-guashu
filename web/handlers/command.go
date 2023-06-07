@@ -106,7 +106,7 @@ func (handler *command) Handle(router *gin.Engine) {
 		}
 		cursor, err := models.CommandCollection.Find(
 			context.TODO(),
-			filter, options.Find().SetSkip((page-1)*limit).SetLimit(limit),
+			filter, options.Find().SetSort(bson.M{"time": -1}).SetSkip((page-1)*limit).SetLimit(limit),
 		)
 		if err != nil {
 			resp.Error(err)
