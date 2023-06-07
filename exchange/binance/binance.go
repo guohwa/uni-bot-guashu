@@ -10,9 +10,18 @@ import (
 	"strconv"
 
 	"github.com/uncle-gua/gobinance/futures"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var zero = regexp.MustCompile(`^[\+\-]?0\.?0*$`)
+
+var (
+	ErrApi   = errors.New("API Error")
+	ErrEmpty = errors.New("position empty")
+	ErrHold  = errors.New("position hold")
+	ErrRisk  = errors.New("position risk")
+)
 
 type Action func(customer models.Customer, command models.Command) error
 
@@ -37,7 +46,36 @@ var actions = map[string]Action{
 
 func (ex *Binance) Execute() {
 	if action, ok := actions[ex.command.Action]; ok {
-		if err := action(ex.customer, ex.command); err != nil {
+		err := action(ex.customer, ex.command)
+
+		filter := bson.M{"_id": ex.command.ID}
+
+		var update bson.M
+		if err != nil {
+			if err == ErrEmpty || err == ErrHold || err == ErrRisk {
+				update = bson.M{"$set": bson.M{
+					"status": "FAILED",
+					"reason": err.Error(),
+				}}
+			} else {
+				log.Error(err)
+				update = bson.M{"$set": bson.M{
+					"status": "FAILED",
+					"reason": "Api Error",
+				}}
+			}
+		} else {
+			update = bson.M{"$set": bson.M{
+				"status": "SUCCESS",
+			}}
+		}
+
+		if err := models.CommandCollection.FindOneAndUpdate(
+			context.TODO(),
+			filter,
+			update,
+			options.FindOneAndUpdate(),
+		).Err(); err != nil {
 			log.Error(err)
 		}
 	} else {
@@ -54,7 +92,7 @@ func open(customer models.Customer, command models.Command) error {
 
 	amount1 := amount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
 	if !isZero(amount1) {
-		return errors.New("position hold")
+		return ErrHold
 	}
 
 	oppositeSide := opposite(command.Side)
@@ -76,6 +114,34 @@ func open(customer models.Customer, command models.Command) error {
 			Do(context.Background()); err != nil {
 			return err
 		}
+	}
+	prices, err := client.NewListPricesService().
+		Symbol(command.Symbol).
+		Do(context.Background())
+	if err != nil {
+		return err
+	}
+
+	price := -1.0
+	for _, p := range prices {
+		if command.Symbol == p.Symbol {
+			v, err := strconv.ParseFloat(p.Price, 64)
+			if err != nil {
+				return err
+			}
+			price = v
+		}
+	}
+	if price < 0 {
+		return ErrApi
+	}
+
+	risk1, err := risk(account, command.Quantity, price)
+	if err != nil {
+		return err
+	}
+	if risk1 > customer.Level1 {
+		return ErrRisk
 	}
 
 	side := func(ps futures.PositionSideType) futures.SideType {
@@ -107,7 +173,7 @@ func close(customer models.Customer, command models.Command) error {
 
 	amount := amount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
 	if isZero(amount) {
-		return errors.New("position empty")
+		return ErrEmpty
 	}
 
 	side := func(ps futures.PositionSideType) futures.SideType {
@@ -138,7 +204,36 @@ func incr(customer models.Customer, command models.Command) error {
 
 	amount := amount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
 	if isZero(amount) {
-		return errors.New("position empty")
+		return ErrEmpty
+	}
+
+	prices, err := client.NewListPricesService().
+		Symbol(command.Symbol).
+		Do(context.Background())
+	if err != nil {
+		return err
+	}
+
+	price := -1.0
+	for _, p := range prices {
+		if command.Symbol == p.Symbol {
+			v, err := strconv.ParseFloat(p.Price, 64)
+			if err != nil {
+				return err
+			}
+			price = v
+		}
+	}
+	if price < 0 {
+		return ErrApi
+	}
+
+	risk2, err := risk(account, command.Quantity, price)
+	if err != nil {
+		return err
+	}
+	if risk2 > customer.Level2 {
+		return ErrRisk
 	}
 
 	side := func(ps futures.PositionSideType) futures.SideType {
@@ -169,7 +264,7 @@ func decr(customer models.Customer, command models.Command) error {
 
 	amount := amount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
 	if isZero(amount) {
-		return errors.New("position empty")
+		return ErrEmpty
 	}
 
 	side := func(ps futures.PositionSideType) futures.SideType {
@@ -239,4 +334,17 @@ func format(symbol string, f float64) string {
 	}
 
 	return strconv.FormatFloat(f, 'f', precision, 64)
+}
+
+func risk(account *futures.Account, quantity, price float64) (float64, error) {
+	totalMaintMargin, err := strconv.ParseFloat(account.TotalMaintMargin, 64)
+	if err != nil {
+		return totalMaintMargin, err
+	}
+	totalMarginBalance, err := strconv.ParseFloat(account.TotalWalletBalance, 64)
+	if err != nil {
+		return totalMarginBalance, err
+	}
+
+	return (totalMaintMargin*100 + quantity*price) / totalMarginBalance, nil
 }

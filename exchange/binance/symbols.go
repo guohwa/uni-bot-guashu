@@ -8,24 +8,32 @@ import (
 	"github.com/uncle-gua/gobinance/futures"
 )
 
-var ExchangeInfo *futures.ExchangeInfo
+var (
+	count        = 0
+	ExchangeInfo *futures.ExchangeInfo
+)
 
 func init() {
+	synchronize()
+	count++
+
+	c := cron.New(cron.WithSeconds())
+	c.AddFunc("@every 10m", synchronize)
+	c.Start()
+}
+
+func synchronize() {
 	client := futures.NewClient("", "")
 	info, err := client.NewExchangeInfoService().Do(context.Background())
 	if err != nil {
-		panic(err)
-	}
-	ExchangeInfo = info
-
-	c := cron.New(cron.WithSeconds())
-	c.AddFunc("@every 10m", func() {
-		info, err := client.NewExchangeInfoService().Do(context.Background())
-		if err != nil {
+		if count == 0 {
+			panic(err)
+		} else {
 			log.Error(err)
 		}
 
-		ExchangeInfo = info
-	})
-	c.Start()
+		return
+	}
+
+	ExchangeInfo = info
 }

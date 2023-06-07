@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -143,6 +144,12 @@ func (handler *customer) Handle(router *gin.Engine) {
 			return
 		}
 
+		scheme := "http://"
+		if ctx.Request.TLS != nil || ctx.Request.Header.Get("X-Forwarded-Proto") == "https" {
+			scheme = "https://"
+		}
+		url := fmt.Sprintf("%s%s%s%s", scheme, ctx.Request.Host, ctx.Request.URL.Host, "/tv/")
+
 		customer := models.Customer{}
 		if err := models.CustomerCollection.FindOne(context.TODO(), bson.M{
 			"_id": uId,
@@ -153,6 +160,7 @@ func (handler *customer) Handle(router *gin.Engine) {
 
 		resp.HTML("customer/edit.html", response.Context{
 			"item": customer,
+			"url":  url,
 		})
 	})
 

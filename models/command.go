@@ -14,7 +14,6 @@ type Command struct {
 	Action     string                   `bson:"action"`
 	Symbol     string                   `bson:"symbol"`
 	Side       futures.PositionSideType `bson:"side"`
-	Capital    float64                  `bson:"capital"`
 	Size       float64                  `bson:"size"`
 	Quantity   float64                  `bson:"quantity"`
 	Comment    string                   `bson:"comment"`

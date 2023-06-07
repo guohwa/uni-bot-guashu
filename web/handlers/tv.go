@@ -69,8 +69,6 @@ func (handler *tv) Handle(router *gin.Engine) {
 			return
 		}
 
-		quantity := customer.Capital * customer.Scale / form.Capital * form.Size
-
 		command := models.Command{
 			ID:         primitive.NewObjectID(),
 			CustomerID: customer.ID,
@@ -78,9 +76,8 @@ func (handler *tv) Handle(router *gin.Engine) {
 			Action:     form.Action,
 			Symbol:     symbol,
 			Side:       form.Side,
-			Capital:    form.Capital,
 			Size:       form.Size,
-			Quantity:   quantity,
+			Quantity:   form.Size * customer.Scale,
 			Comment:    form.Comment,
 			Status:     "NEW",
 			Reason:     "",
