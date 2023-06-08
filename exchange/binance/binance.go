@@ -90,14 +90,14 @@ func open(customer models.Customer, command models.Command) error {
 		return err
 	}
 
-	amount1 := amount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
+	amount1 := getAmount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
 	if !isZero(amount1) {
 		return ErrHold
 	}
 
 	oppositeSide := opposite(command.Side)
 
-	amount2 := amount(account.Positions, command.Symbol, oppositeSide)
+	amount2 := getAmount(account.Positions, command.Symbol, oppositeSide)
 	if !isZero(amount2) {
 		side := func(ps futures.PositionSideType) futures.SideType {
 			if ps == futures.PositionSideTypeLong {
@@ -115,25 +115,10 @@ func open(customer models.Customer, command models.Command) error {
 			return err
 		}
 	}
-	prices, err := client.NewListPricesService().
-		Symbol(command.Symbol).
-		Do(context.Background())
+
+	price, err := getPrice(command.Symbol)
 	if err != nil {
 		return err
-	}
-
-	price := -1.0
-	for _, p := range prices {
-		if command.Symbol == p.Symbol {
-			v, err := strconv.ParseFloat(p.Price, 64)
-			if err != nil {
-				return err
-			}
-			price = v
-		}
-	}
-	if price < 0 {
-		return ErrApi
 	}
 
 	risk1, err := risk(account, command.Quantity, price)
@@ -171,7 +156,7 @@ func close(customer models.Customer, command models.Command) error {
 		return err
 	}
 
-	amount := amount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
+	amount := getAmount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
 	if isZero(amount) {
 		return ErrEmpty
 	}
@@ -203,30 +188,14 @@ func incr(customer models.Customer, command models.Command) error {
 		return err
 	}
 
-	amount := amount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
+	amount := getAmount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
 	if isZero(amount) {
 		return ErrEmpty
 	}
 
-	prices, err := client.NewListPricesService().
-		Symbol(command.Symbol).
-		Do(context.Background())
+	price, err := getPrice(command.Symbol)
 	if err != nil {
 		return err
-	}
-
-	price := -1.0
-	for _, p := range prices {
-		if command.Symbol == p.Symbol {
-			v, err := strconv.ParseFloat(p.Price, 64)
-			if err != nil {
-				return err
-			}
-			price = v
-		}
-	}
-	if price < 0 {
-		return ErrApi
 	}
 
 	risk2, err := risk(account, command.Quantity, price)
@@ -264,7 +233,7 @@ func decr(customer models.Customer, command models.Command) error {
 		return err
 	}
 
-	amount := amount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
+	amount := getAmount(account.Positions, command.Symbol, futures.PositionSideType(command.Side))
 	if isZero(amount) {
 		return ErrEmpty
 	}
@@ -298,7 +267,7 @@ func decr(customer models.Customer, command models.Command) error {
 	return nil
 }
 
-func amount(positions []*futures.AccountPosition, symbol string, side futures.PositionSideType) string {
+func getAmount(positions []*futures.AccountPosition, symbol string, side futures.PositionSideType) string {
 	for _, p := range positions {
 		if p.Symbol == symbol && p.PositionSide == side {
 			return p.PositionAmt
@@ -306,6 +275,22 @@ func amount(positions []*futures.AccountPosition, symbol string, side futures.Po
 	}
 
 	return "0"
+}
+
+func getPrice(symbol string) (float64, error) {
+	client := futures.NewClient("", "")
+	prices, err := client.NewListPricesService().Do(context.Background())
+	if err != nil {
+		return 0.0, err
+	}
+
+	for _, p := range prices {
+		if p.Symbol == symbol {
+			return strconv.ParseFloat(p.Price, 64)
+		}
+	}
+
+	return 0.0, ErrApi
 }
 
 func abs(s string) string {
