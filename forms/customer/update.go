@@ -2,6 +2,7 @@ package forms
 
 type Update struct {
 	Name      string  `form:"name" binding:"required"`
+	Exchange  string  `form:"exchange" binding:"required,oneof=BINANCE OKX"`
 	ApiKey    string  `form:"apiKey" binding:"required"`
 	ApiSecret string  `form:"apiSecret" binding:"required"`
 	Capital   float64 `form:"capital" binding:"required"`

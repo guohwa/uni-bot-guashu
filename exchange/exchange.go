@@ -19,7 +19,3 @@ func New(name string, customer models.Customer, command models.Command) common.E
 
 	return nil
 }
-
-func Support(name string) bool {
-	return exchanges[name] != nil
-}

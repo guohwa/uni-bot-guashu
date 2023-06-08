@@ -9,6 +9,14 @@
                             <label for="inputName">Name</label>
                             <input class="form-control" id="inputName" name="name" placeholder="Name" autocomplete="off" value="" autofocus>
                         </div>
+                        <div class="form-group">
+                            <label for="inputExchange">Exchange</label>
+                            <select class="form-control select2" id="inputExchange" name="exchange" placeholder="Exchange" data-placeholder="Exchange" style="width: 100%;">
+                                <option></option>
+                                <option value="BINANCE" selected>BINANCE</option>
+                                <option value="OKX">OKX</option>
+                            </select>
+                        </div>
                         <div class="form-group toggle-password">
                             <label for="inputApiKey">ApiKey</label>
                             <input type="password" class="form-control" id="inputApiKey" name="apiKey" placeholder="Api Key" autocomplete="off" value=""{% if user.Role == 'Demo' %} disabled{% endif %}>

@@ -9,6 +9,7 @@ type Customer struct {
 	UserID    primitive.ObjectID `bson:"userId"`
 	Name      string             `bson:"name"`
 	Token     string             `bson:"token"`
+	Exchange  string             `bson:"exchange"`
 	ApiKey    string             `bson:"apiKey"`
 	ApiSecret string             `bson:"apiSecret"`
 	Capital   float64            `bson:"capital"`

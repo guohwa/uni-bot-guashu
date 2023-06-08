@@ -7,6 +7,7 @@ import (
 	"bot/log"
 	"bot/models"
 	"context"
+	"errors"
 	"net"
 	"net/http"
 	"strings"
@@ -55,18 +56,17 @@ func (handler *tv) Handle(router *gin.Engine) {
 			return
 		}
 
-		sections := strings.Split(form.Symbol, ":")
-		if len(sections) < 2 {
-			log.Error("invalid symbol")
-			ctx.String(http.StatusBadRequest, "invalid symbol")
-			return
+		status := "NEW"
+		reason := ""
+		exname, symbol, err := handler.split(form.Symbol)
+		if err != nil {
+			status = "FAILED"
+			reason = err.Error()
 		}
-		symbol := strings.TrimSuffix(sections[1], ".P")
-		exname := sections[0]
-		if !exchange.Support(exname) {
-			log.Error("unsupported exchange")
-			ctx.String(http.StatusBadRequest, "unsupported exchange")
-			return
+
+		if exname != customer.Exchange {
+			status = "FAILED"
+			reason = "exchange mismatch"
 		}
 
 		command := models.Command{
@@ -79,8 +79,8 @@ func (handler *tv) Handle(router *gin.Engine) {
 			Size:       form.Size,
 			Quantity:   form.Size * customer.Scale,
 			Comment:    form.Comment,
-			Status:     "NEW",
-			Reason:     "",
+			Status:     status,
+			Reason:     reason,
 			Time:       time.Now().UTC().UnixMilli(),
 		}
 		if _, err := models.CommandCollection.InsertOne(
@@ -93,10 +93,23 @@ func (handler *tv) Handle(router *gin.Engine) {
 			return
 		}
 
-		go exchange.New(exname, customer, command).Execute()
+		if status == "NEW" {
+			go exchange.New(exname, customer, command).Execute()
+		}
 
 		ctx.String(http.StatusOK, "ok")
 	})
+}
+
+func (handler *tv) split(s string) (exchange, symbol string, err error) {
+	sections := strings.Split(s, ":")
+	if len(sections) < 2 {
+		err = errors.New("invalid symbol")
+		return
+	}
+	exchange = sections[0]
+	symbol = strings.TrimSuffix(sections[1], ".P")
+	return
 }
 
 func (handler *tv) authenticate(ctx *gin.Context) bool {
