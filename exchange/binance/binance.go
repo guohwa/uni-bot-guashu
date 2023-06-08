@@ -178,10 +178,11 @@ func close(customer models.Customer, command models.Command) error {
 
 	side := func(ps futures.PositionSideType) futures.SideType {
 		if ps == futures.PositionSideTypeShort {
-			return futures.SideTypeSell
+			return futures.SideTypeBuy
 		}
-		return futures.SideTypeBuy
+		return futures.SideTypeSell
 	}(command.Side)
+
 	if _, err := client.NewCreateOrderService().
 		Symbol(command.Symbol).
 		Type(futures.OrderTypeMarket).
@@ -242,6 +243,7 @@ func incr(customer models.Customer, command models.Command) error {
 		}
 		return futures.SideTypeBuy
 	}(command.Side)
+
 	if _, err := client.NewCreateOrderService().
 		Symbol(command.Symbol).
 		Type(futures.OrderTypeMarket).
