@@ -56,33 +56,13 @@ func (handler *tv) Handle(router *gin.Engine) {
 			return
 		}
 
-		status := "NEW"
-		reason := ""
-		exname, symbol, err := handler.split(form.Symbol)
+		command, err := handler.command(customer, form)
 		if err != nil {
-			status = "FAILED"
-			reason = err.Error()
+			log.Error(err)
+			ctx.String(http.StatusInternalServerError, "internal error")
+			return
 		}
 
-		if exname != customer.Exchange {
-			status = "FAILED"
-			reason = "exchange mismatch"
-		}
-
-		command := models.Command{
-			ID:         primitive.NewObjectID(),
-			CustomerID: customer.ID,
-			Exchange:   exname,
-			Action:     form.Action,
-			Symbol:     symbol,
-			Side:       form.Side,
-			Size:       form.Size,
-			Quantity:   form.Size * customer.Scale,
-			Comment:    form.Comment,
-			Status:     status,
-			Reason:     reason,
-			Time:       time.Now().UTC().UnixMilli(),
-		}
 		if _, err := models.CommandCollection.InsertOne(
 			context.TODO(),
 			command,
@@ -93,23 +73,74 @@ func (handler *tv) Handle(router *gin.Engine) {
 			return
 		}
 
-		if status == "NEW" {
-			go exchange.New(exname, customer, command).Execute()
+		if command.Status == "NEW" {
+			exchange := exchange.New(customer, command)
+			if exchange != nil {
+				go exchange.Execute()
+			} else {
+				log.Error("exchange not found")
+				ctx.String(http.StatusInternalServerError, "internal error")
+				return
+			}
 		}
 
 		ctx.String(http.StatusOK, "ok")
 	})
 }
 
-func (handler *tv) split(s string) (exchange, symbol string, err error) {
-	sections := strings.Split(s, ":")
+func (handler *tv) command(customer models.Customer, form forms.Command) (models.Command, error) {
+	var command models.Command
+
+	sections := strings.Split(form.Symbol, ":")
 	if len(sections) < 2 {
-		err = errors.New("invalid symbol")
-		return
+		return command, errors.New("invalid symbol")
 	}
-	exchange = sections[0]
-	symbol = strings.TrimSuffix(sections[1], ".P")
-	return
+
+	exchange := sections[0]
+	symbol := strings.TrimSuffix(sections[1], ".P")
+	command = models.Command{
+		ID:         primitive.NewObjectID(),
+		CustomerID: customer.ID,
+		Exchange:   exchange,
+		Action:     form.Action,
+		Symbol:     symbol,
+		Side:       form.Side,
+		Size:       form.Size,
+		Quantity:   form.Size * customer.Scale,
+		Comment:    form.Comment,
+		Status:     "NEW",
+		Reason:     "",
+		Time:       time.Now().UTC().UnixMilli(),
+	}
+
+	if customer.Exchange != exchange {
+		command.Status = "FAILED"
+		command.Reason = "exchange mismatch"
+		return command, nil
+	}
+
+	if customer.Status == "Disable" {
+		command.Status = "FAILED"
+		command.Reason = "customer disable"
+		return command, nil
+	}
+
+	filter := bson.M{
+		"_id": customer.UserID,
+	}
+
+	var user models.User
+	if err := models.UserCollection.FindOne(context.Background(), filter).Decode(&user); err != nil {
+		return command, err
+	}
+
+	if user.Status == "Disable" {
+		command.Status = "FAILED"
+		command.Reason = "user disable"
+		return command, nil
+	}
+
+	return command, nil
 }
 
 func (handler *tv) authenticate(ctx *gin.Context) bool {
