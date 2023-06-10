@@ -101,7 +101,7 @@
                                     </div>
                                     <div class="tr">
                                         <div class="th" data-title="ROE">ROE</div>
-                                        <div class="td" data-title="ROE">{{ (account.TotalWalletBalance - customer.Capital) / customer.Capital * 100 }}</div>
+                                        <div class="td" data-title="ROE">{% if customer.Capital|stringformat:'%.2f' == "0.00" %}0{% else %}{{ (account.TotalWalletBalance - customer.Capital) / customer.Capital * 100 }}{% endif %}</div>
                                     </div>
                                     <div class="tr">
                                         <div class="th" data-title="FeeTier">FeeTier</div>
@@ -133,7 +133,7 @@
                                     </div>
                                     <div class="tr">
                                         <div class="th" data-title="TotalMaintMargin">TotalMaintMargin</div>
-                                        <div class="td" data-title="TotalMaintMargin">{{ account.TotalMaintMargin }}</div>
+                                        <div class="td text-yellow" data-title="TotalMaintMargin">{{ account.TotalMaintMargin }}</div>
                                     </div>
                                     <div class="tr">
                                         <div class="th" data-title="TotalWalletBalance">TotalWalletBalance</div>
@@ -145,7 +145,7 @@
                                     </div>
                                     <div class="tr">
                                         <div class="th" data-title="TotalMarginBalance">TotalMarginBalance</div>
-                                        <div class="td" data-title="TotalMarginBalance">{{ account.TotalMarginBalance }}</div>
+                                        <div class="td text-yellow" data-title="TotalMarginBalance">{{ account.TotalMarginBalance }}</div>
                                     </div>
                                     <div class="tr">
                                         <div class="th" data-title="TotalPositionInitialMargin">TotalPositionInitialMargin</div>
