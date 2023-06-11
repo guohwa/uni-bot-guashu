@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"bot/forms"
+	"bot/exchange"
+	orderform "bot/forms/order"
 	"bot/log"
 	"bot/models"
 	"bot/web/handlers/response"
@@ -121,7 +122,7 @@ func (handler *position) Handle(router *gin.Engine) {
 		}
 
 		resp := response.New(ctx)
-		form := forms.Position{}
+		form := orderform.Close{}
 		if user.Role == "Demo" {
 			resp.Error("Demo user can not close position")
 			return
@@ -184,7 +185,7 @@ func (handler *position) Handle(router *gin.Engine) {
 		}
 
 		resp := response.New(ctx)
-		form := forms.Order{}
+		form := orderform.Cancel{}
 
 		if err := ctx.ShouldBind(&form); err != nil {
 			resp.Error(err)
@@ -209,6 +210,72 @@ func (handler *position) Handle(router *gin.Engine) {
 		client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
 		_, err = client.NewCancelOrderService().Symbol(form.Symbol).OrderID(form.OrderID).Do(context.Background())
 		if err != nil {
+			resp.Error(err)
+			return
+		}
+
+		resp.Success("Order cancel successful", "")
+	})
+
+	router.POST("/position/create", func(ctx *gin.Context) {
+		user, ok := getUser(ctx)
+		if !ok {
+			ctx.Redirect(http.StatusFound, "/account/login")
+			ctx.Abort()
+			return
+		}
+
+		resp := response.New(ctx)
+		form := orderform.Create{}
+
+		if err := ctx.ShouldBind(&form); err != nil {
+			resp.Error(err)
+			return
+		}
+
+		id, err := primitive.ObjectIDFromHex(form.CustomerID)
+		if err != nil {
+			resp.Error(err)
+			return
+		}
+
+		customer := models.Customer{}
+		if err := models.CustomerCollection.FindOne(context.TODO(), bson.M{
+			"_id":    id,
+			"userId": user.ID,
+		}).Decode(&customer); err != nil {
+			resp.Error(err)
+			return
+		}
+
+		exchange := exchange.New(customer)
+		if exchange == nil {
+			resp.Error("exchange mismatch")
+			return
+		}
+		size := exchange.FormatSize(form.Symbol, form.Size)
+
+		var side futures.SideType
+		if form.Side == "LONG" {
+			if form.Action == "OPEN" {
+				side = futures.SideTypeBuy
+			} else {
+				side = futures.SideTypeSell
+			}
+		} else {
+			if form.Action == "OPEN" {
+				side = futures.SideTypeSell
+			} else {
+				side = futures.SideTypeBuy
+			}
+		}
+		client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
+		if _, err = client.NewCreateOrderService().
+			Symbol(form.Symbol).
+			Side(side).
+			PositionSide(futures.PositionSideType(form.Side)).
+			Quantity(size).
+			Do(context.Background()); err != nil {
 			resp.Error(err)
 			return
 		}

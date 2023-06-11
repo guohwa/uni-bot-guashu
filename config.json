@@ -1,6 +1,6 @@
 {
     "app": {
-        "mode": "PROD",
+        "mode": "DEV",
         "title": "Uni Bot",
         "listen": ":8080",
         "trust":["127.0.0.1"],

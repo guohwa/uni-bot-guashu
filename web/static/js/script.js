@@ -129,4 +129,36 @@ $(document).ready(function() {
             }
         });
     });
+
+    $('.btn-order').click(function(evt) {
+        var that = $(this),
+            loading = $('.loading'),
+            form = $(that.parents("form")),
+            url = form.attr('action'),
+            method = form.attr('method'),
+            timeout = 3000,
+            side = that.data('value'),
+            data = form.serialize() + "&" + $.param({side});
+        evt.preventDefault();
+        loading.show();
+        $.ajax({
+            url,
+            method,
+            data,
+            success: function(data) {
+                if (data.code) {
+                    toastr.error(data.msg);
+                    that.find('.captcha').click();
+                } else {
+                    toastr.success(data.msg);
+                    setTimeout(function() {
+                        location.href = data.url;
+                    }, timeout);
+                }
+            },
+            complete: function() {
+                loading.hide();
+            }
+        });
+    });
 });

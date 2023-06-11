@@ -10,6 +10,58 @@
                             </div>
                         </div>
                     </div>
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <nav>
+                                <div class="nav nav-tabs position-tab" id="nav-tab" role="tablist">
+                                    <button class="nav-link active" id="nav-open-tab" data-toggle="tab" data-target="#nav-open" type="button" role="tab" aria-controls="nav-open" aria-selected="true">Open</button>
+                                    <button class="nav-link" id="nav-close-tab" data-toggle="tab" data-target="#nav-close" type="button" role="tab" aria-controls="nav-close" aria-selected="false">Close</button>
+                                </div>
+                            </nav>
+                            <div class="tab-content" id="nav-tabContent">
+                                <div class="tab-pane active" id="nav-open" role="tabpanel" aria-labelledby="nav-open-tab">
+                                    <form class="form position-form" method="POST" action="/position/create">
+                                        <div class="form-group">
+                                            <input type="hidden" name="action" value="open">
+                                            <input type="hidden" name="customer" value="{{ customer.ID.Hex() }}">
+                                            <input class="form-control" name="symbol" placeholder="Symbol" autocomplete="off">
+                                        </div>
+                                        <div class="form-group">
+                                            <input class="form-control" name="size" placeholder="Size" autocomplete="off">
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-6 pr-1">
+                                                <button type="button" data-name="side" data-value="LONG" class="btn btn-sm btn-order btn-long">LONG</button>
+                                            </div>
+                                            <div class="col-sm-6 pl-1">
+                                                <button type="button" data-name="side" data-value="SHORT" class="btn btn-sm btn-order btn-short">SHORT</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="tab-pane" id="nav-close" role="tabpanel" aria-labelledby="nav-close-tab">
+                                    <form class="form position-form" method="POST" action="/position/order">
+                                        <div class="form-group">
+                                            <input type="hidden" name="action" value="close">
+                                            <input type="hidden" name="customer" value="{{ customer.ID.Hex() }}">
+                                            <input class="form-control" name="symbol" placeholder="Symbol" autocomplete="off">
+                                        </div>
+                                        <div class="form-group">
+                                            <input class="form-control" name="size" placeholder="Size" autocomplete="off">
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-6 pr-1">
+                                                <button type="button" data-name="side" data-value="LONG" class="btn btn-sm btn-order btn-long">LONG</button>
+                                            </div>
+                                            <div class="col-sm-6 pl-1">
+                                                <button type="button" data-name="side" data-value="SHORT" class="btn btn-sm btn-order btn-short">SHORT</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-sm-10">
                     <div class="card mb-3">
@@ -76,7 +128,7 @@
                                         <div class="td" data-title="Quantity">{{ item.OrigQuantity }}</div>
                                         <div class="td" data-title="StopPrice">{{ item.StopPrice }}</div>
                                         <div class="td" data-title="Action">
-                                            <a href="/position/cancel" class="btn btn-danger btn-sm btn-cancel" data-customer="{{ customer.ID.Hex() }}" data-symbol="{{ item.Symbol }}" data-orderid="{{ item.OrderID }}">Cancel</a>
+                                            <a href="{% if user.Role == 'Demo' %}#{% else %}/position/cancel{% endif %}" class="btn btn-danger btn-sm btn-cancel{% if user.Role == 'Demo' %} disabled{% endif %}" data-customer="{{ customer.ID.Hex() }}" data-symbol="{{ item.Symbol }}" data-orderid="{{ item.OrderID }}">Cancel</a>
                                         </div>
                                     </div>{% endfor %}
                                 </div>

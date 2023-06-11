@@ -25,16 +25,14 @@ var (
 
 type Action func(customer models.Customer, command models.Command) error
 
-func New(customer models.Customer, command models.Command) common.Exchange {
+func New(customer models.Customer) common.Exchange {
 	return &Binance{
 		customer,
-		command,
 	}
 }
 
 type Binance struct {
 	customer models.Customer
-	command  models.Command
 }
 
 var actions = map[string]Action{
@@ -44,11 +42,15 @@ var actions = map[string]Action{
 	"DECR":  decr,
 }
 
-func (ex *Binance) Execute() {
-	if action, ok := actions[ex.command.Action]; ok {
-		err := action(ex.customer, ex.command)
+func (ex *Binance) FormatSize(symbol string, size float64) string {
+	return format(symbol, size)
+}
 
-		filter := bson.M{"_id": ex.command.ID}
+func (ex *Binance) Execute(command models.Command) {
+	if action, ok := actions[command.Action]; ok {
+		err := action(ex.customer, command)
+
+		filter := bson.M{"_id": command.ID}
 
 		var update bson.M
 		if err != nil {
@@ -79,7 +81,7 @@ func (ex *Binance) Execute() {
 			log.Error(err)
 		}
 	} else {
-		log.Errorf("unsupported action: %s", ex.command.Action)
+		log.Errorf("unsupported action: %s", command.Action)
 	}
 }
 
@@ -312,7 +314,7 @@ func opposite(s futures.PositionSideType) futures.PositionSideType {
 	return futures.PositionSideTypeLong
 }
 
-func format(symbol string, f float64) string {
+func format(symbol string, size float64) string {
 	precision := 0
 	for _, s := range ExchangeInfo.Symbols {
 		if s.Symbol == symbol {
@@ -320,7 +322,7 @@ func format(symbol string, f float64) string {
 		}
 	}
 
-	return strconv.FormatFloat(f, 'f', precision, 64)
+	return strconv.FormatFloat(size, 'f', precision, 64)
 }
 
 func risk(account *futures.Account, quantity, price float64) (float64, error) {

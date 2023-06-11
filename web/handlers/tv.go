@@ -74,9 +74,9 @@ func (handler *tv) Handle(router *gin.Engine) {
 		}
 
 		if command.Status == "NEW" {
-			exchange := exchange.New(customer, command)
+			exchange := exchange.New(customer)
 			if exchange != nil {
-				go exchange.Execute()
+				go exchange.Execute(command)
 			} else {
 				log.Error("exchange not found")
 				ctx.String(http.StatusInternalServerError, "internal error")

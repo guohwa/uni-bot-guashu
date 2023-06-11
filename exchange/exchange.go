@@ -12,9 +12,9 @@ var exchanges = map[string]common.Constructor{
 	"OKX":     okx.New,
 }
 
-func New(customer models.Customer, command models.Command) common.Exchange {
-	if constructor, ok := exchanges[command.Exchange]; ok {
-		return constructor(customer, command)
+func New(customer models.Customer) common.Exchange {
+	if constructor, ok := exchanges[customer.Exchange]; ok {
+		return constructor(customer)
 	}
 
 	return nil

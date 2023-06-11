@@ -203,6 +203,56 @@ body {
     text-shadow: 0 0px 1px #fff;
     text-decoration: none;
 }
+.position-tab {
+    border-bottom: none;
+}
+.position-tab>.nav-link {
+    width: 50%;
+    color: #b2b5be;
+    border: 1px solid #2a2e39;
+    background-color: #161a25;
+    border-color: #2a2e39;
+    outline: none;
+    border-radius: 0;
+}
+.position-tab>.nav-link:first-child {
+    border-top-left-radius: 0.25rem;
+}
+.position-tab>.nav-link:last-child {
+    border-top-right-radius: 0.25rem;
+}
+.position-tab>.nav-link.active {
+    color: #fff;
+    background-color: #2a2e39;
+    border-color: #2a2e39;
+}
+.position-tab>.nav-link:hover {
+    color: #fff;
+    border-color: #2a2e39;
+}
+
+.position-form {
+    margin-top: 1rem;
+}
+.position-form .btn {
+    box-shadow: none;
+    width: 100%;
+    color: #fff;
+}
+.btn-long {
+    background-color: rgb(14, 203, 129);
+}
+.btn-long:hover {
+    color: #fff;
+    background-color: rgb(50, 217, 147);
+}
+.btn-short {
+    background-color: rgb(246, 70, 93);
+}
+.btn-short:hover {
+    color: #fff;
+    background-color: rgb(255, 112, 126);
+}
 @media (min-width: 992px) {
     .navbar-expand-lg .navbar-nav .dropdown-menu {
         left: inherit;

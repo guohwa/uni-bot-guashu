@@ -1,6 +1,6 @@
-package forms
+package order
 
-type Position struct {
+type Close struct {
 	CustomerID   string `form:"customer" binding:"required"`
 	Symbol       string `form:"symbol" binding:"required"`
 	PositionSide string `form:"positionSide" binding:"required"`
