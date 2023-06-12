@@ -256,30 +256,38 @@ func (handler *position) Handle(router *gin.Engine) {
 		size := exchange.FormatSize(form.Symbol, form.Size)
 
 		var side futures.SideType
-		if form.Side == "LONG" {
-			if form.Action == "OPEN" {
+		var positionSide futures.PositionSideType
+		switch strings.ToUpper(form.Side) {
+		case "LONG":
+			positionSide = futures.PositionSideTypeLong
+			switch strings.ToUpper(form.Action) {
+			case "OPEN":
 				side = futures.SideTypeBuy
-			} else {
+			case "CLOSE":
 				side = futures.SideTypeSell
 			}
-		} else {
-			if form.Action == "OPEN" {
+		case "SHORT":
+			positionSide = futures.PositionSideTypeShort
+			switch strings.ToUpper(form.Action) {
+			case "OPEN":
 				side = futures.SideTypeSell
-			} else {
+			case "CLOSE":
 				side = futures.SideTypeBuy
 			}
 		}
+
 		client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
 		if _, err = client.NewCreateOrderService().
 			Symbol(form.Symbol).
+			Type(futures.OrderTypeMarket).
 			Side(side).
-			PositionSide(futures.PositionSideType(form.Side)).
+			PositionSide(positionSide).
 			Quantity(size).
 			Do(context.Background()); err != nil {
 			resp.Error(err)
 			return
 		}
 
-		resp.Success("Order cancel successful", "")
+		resp.Success("Order create successful", "")
 	})
 }

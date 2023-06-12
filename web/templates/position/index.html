@@ -22,7 +22,7 @@
                                 <div class="tab-pane active" id="nav-open" role="tabpanel" aria-labelledby="nav-open-tab">
                                     <form class="form position-form" method="POST" action="/position/create">
                                         <div class="form-group">
-                                            <input type="hidden" name="action" value="open">
+                                            <input type="hidden" name="action" value="OPEN">
                                             <input type="hidden" name="customer" value="{{ customer.ID.Hex() }}">
                                             <input class="form-control" name="symbol" placeholder="Symbol" autocomplete="off">
                                         </div>
@@ -40,9 +40,9 @@
                                     </form>
                                 </div>
                                 <div class="tab-pane" id="nav-close" role="tabpanel" aria-labelledby="nav-close-tab">
-                                    <form class="form position-form" method="POST" action="/position/order">
+                                    <form class="form position-form" method="POST" action="/position/create">
                                         <div class="form-group">
-                                            <input type="hidden" name="action" value="close">
+                                            <input type="hidden" name="action" value="CLOSE">
                                             <input type="hidden" name="customer" value="{{ customer.ID.Hex() }}">
                                             <input class="form-control" name="symbol" placeholder="Symbol" autocomplete="off">
                                         </div>
