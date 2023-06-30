@@ -68,7 +68,7 @@ func (handler *user) Handle(router *gin.Engine) {
 	})
 
 	router.GET("/user/add", func(ctx *gin.Context) {
-		handler.HTML(ctx, "user/add.html", Context{})
+		handler.HTML(ctx, "user/add.html", nil)
 	})
 
 	router.POST("/user/save", func(ctx *gin.Context) {

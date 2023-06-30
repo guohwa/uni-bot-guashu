@@ -12,6 +12,6 @@ type profile struct {
 
 func (handler *profile) Handle(router *gin.Engine) {
 	router.GET("/profile", func(ctx *gin.Context) {
-		handler.HTML(ctx, "profile/index.html", Context{})
+		handler.HTML(ctx, "profile/index.html", nil)
 	})
 }

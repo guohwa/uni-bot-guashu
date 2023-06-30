@@ -17,6 +17,6 @@ func (handler *home) Handle(router *gin.Engine) {
 	})
 
 	router.GET("/home", func(ctx *gin.Context) {
-		handler.HTML(ctx, "home/index.html", Context{})
+		handler.HTML(ctx, "home/index.html", nil)
 	})
 }

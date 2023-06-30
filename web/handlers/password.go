@@ -21,7 +21,7 @@ type password struct {
 
 func (handler *password) Handle(router *gin.Engine) {
 	router.GET("/password", func(ctx *gin.Context) {
-		handler.HTML(ctx, "password/index.html", Context{})
+		handler.HTML(ctx, "password/index.html", nil)
 	})
 
 	router.POST("/password", func(ctx *gin.Context) {
