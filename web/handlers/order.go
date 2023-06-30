@@ -8,7 +8,6 @@ import (
 
 	"bot/log"
 	"bot/models"
-	"bot/web/handlers/response"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -20,6 +19,7 @@ import (
 var orderHandler = &order{}
 
 type order struct {
+	base
 }
 
 func (handler *order) Handle(router *gin.Engine) {
@@ -31,8 +31,6 @@ func (handler *order) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
-
 		filter := bson.M{
 			"userId": user.ID,
 			"status": "Enable",
@@ -42,13 +40,13 @@ func (handler *order) Handle(router *gin.Engine) {
 			filter, options.Find(),
 		)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		var items []models.Customer
 		if err = cursor.All(context.TODO(), &items); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -82,7 +80,7 @@ func (handler *order) Handle(router *gin.Engine) {
 		}
 
 		if customer.ApiKey == "" || customer.ApiSecret == "" {
-			resp.HTML("income/index.html", response.Context{
+			handler.HTML(ctx, "income/index.html", Context{
 				"items":    items,
 				"customer": customer,
 				"orders":   make([]*futures.Order, 0),
@@ -93,14 +91,14 @@ func (handler *order) Handle(router *gin.Engine) {
 		client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
 		orders, err := client.NewListOrdersService().Do(context.Background())
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		sort.SliceStable(orders, func(i, j int) bool {
 			return orders[i].Time > orders[j].Time
 		})
 
-		resp.HTML("order/index.html", response.Context{
+		handler.HTML(ctx, "order/index.html", Context{
 			"items":    items,
 			"customer": customer,
 			"orders":   orders,

@@ -164,12 +164,12 @@ body {
     right: 0;
 }
 .asks {
-    height: 232px;
+    height: 242px;
     overflow: hidden;
 }
 .bids {
     margin-bottom: 10px;
-    height: 204px;
+    height: 210px;
     overflow: hidden;
 }
 .bids table>thead>tr>th {
@@ -196,14 +196,14 @@ body {
 }
 .trades table>thead>tr>th, .asks table>thead>tr>th, .symbols table>thead>tr>th {
     color: #848e9c;
-    font-size: 8px;
+    font-size: 0.8rem;
     text-align: left;
     padding-top: 6px;
     padding-bottom: 4px;
 }
 .trades table>tbody>tr>td, .asks table>tbody>tr>td, .bids table>tbody>tr>td, .symbols table>tbody>tr>td {
     color: #b7bdc6;
-    font-size: 8px;
+    font-size: 0.8rem;
     text-align: left;
 }
 .symbols table>tbody>tr {

@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"bot/web/handlers/response"
-
 	"github.com/gin-gonic/gin"
 )
 
 var homeHandler = &home{}
 
 type home struct {
+	base
 }
 
 func (handler *home) Handle(router *gin.Engine) {
@@ -18,7 +17,6 @@ func (handler *home) Handle(router *gin.Engine) {
 	})
 
 	router.GET("/home", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-		resp.HTML("home/index.html", response.Context{})
+		handler.HTML(ctx, "home/index.html", Context{})
 	})
 }

@@ -9,7 +9,6 @@ import (
 
 	"bot/log"
 	"bot/models"
-	"bot/web/handlers/response"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -20,6 +19,7 @@ import (
 var commandHandler = &command{}
 
 type command struct {
+	base
 }
 
 func (handler *command) Handle(router *gin.Engine) {
@@ -31,8 +31,6 @@ func (handler *command) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
-
 		customerFilter := bson.M{
 			"userId": user.ID,
 			"status": "Enable",
@@ -42,13 +40,13 @@ func (handler *command) Handle(router *gin.Engine) {
 			customerFilter, options.Find(),
 		)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		var items []models.Customer
 		if err = customerCursor.All(context.TODO(), &items); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -90,18 +88,18 @@ func (handler *command) Handle(router *gin.Engine) {
 			filter,
 			options.Count().SetMaxTime(2*time.Second))
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		page, err := strconv.ParseInt(ctx.DefaultQuery("page", "1"), 10, 64)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		limit, err := strconv.ParseInt(ctx.DefaultQuery("limit", "10"), 10, 64)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		cursor, err := models.CommandCollection.Find(
@@ -109,17 +107,17 @@ func (handler *command) Handle(router *gin.Engine) {
 			filter, options.Find().SetSort(bson.M{"time": -1}).SetSkip((page-1)*limit).SetLimit(limit),
 		)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		var commands []models.Command
 		if err = cursor.All(context.TODO(), &commands); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.HTML("command/index.html", response.Context{
+		handler.HTML(ctx, "command/index.html", Context{
 			"items":    items,
 			"page":     page,
 			"count":    count,

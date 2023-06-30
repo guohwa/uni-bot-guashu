@@ -8,7 +8,6 @@ import (
 	forms "bot/forms/user"
 	"bot/models"
 	"bot/utils"
-	"bot/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,11 +18,11 @@ import (
 var userHandler = &user{}
 
 type user struct {
+	base
 }
 
 func (handler *user) Handle(router *gin.Engine) {
 	router.GET("/user", func(ctx *gin.Context) {
-		resp := response.New(ctx)
 		filter := bson.M{}
 
 		count, err := models.UserCollection.CountDocuments(
@@ -31,18 +30,18 @@ func (handler *user) Handle(router *gin.Engine) {
 			filter,
 			options.Count().SetMaxTime(2*time.Second))
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		page, err := strconv.ParseInt(ctx.DefaultQuery("page", "1"), 10, 64)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		limit, err := strconv.ParseInt(ctx.DefaultQuery("limit", "10"), 10, 64)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		cursor, err := models.UserCollection.Find(
@@ -50,17 +49,17 @@ func (handler *user) Handle(router *gin.Engine) {
 			filter, options.Find().SetSkip((page-1)*limit).SetLimit(limit),
 		)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		var items []models.User
 		if err = cursor.All(context.TODO(), &items); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.HTML("user/index.html", response.Context{
+		handler.HTML(ctx, "user/index.html", Context{
 			"page":  page,
 			"count": count,
 			"limit": limit,
@@ -69,16 +68,14 @@ func (handler *user) Handle(router *gin.Engine) {
 	})
 
 	router.GET("/user/add", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-		resp.HTML("user/add.html", response.Context{})
+		handler.HTML(ctx, "user/add.html", Context{})
 	})
 
 	router.POST("/user/save", func(ctx *gin.Context) {
-		resp := response.New(ctx)
 		form := forms.Save{}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -93,20 +90,18 @@ func (handler *user) Handle(router *gin.Engine) {
 			saved,
 			options.InsertOne(),
 		); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.Success("User save successful", "/user")
+		handler.Success(ctx, "User save successful", "/user")
 	})
 
 	router.GET("/user/edit/:id", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-
 		sId := ctx.Param("id")
 		uId, err := primitive.ObjectIDFromHex(sId)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -114,27 +109,26 @@ func (handler *user) Handle(router *gin.Engine) {
 		if err := models.UserCollection.FindOne(context.TODO(), bson.M{
 			"_id": uId,
 		}).Decode(&user); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.HTML("user/edit.html", response.Context{
+		handler.HTML(ctx, "user/edit.html", Context{
 			"item": user,
 		})
 	})
 
 	router.POST("/user/update/:id", func(ctx *gin.Context) {
-		resp := response.New(ctx)
 		form := forms.Update{}
 		sId := ctx.Param("id")
 		uId, err := primitive.ObjectIDFromHex(sId)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -161,10 +155,10 @@ func (handler *user) Handle(router *gin.Engine) {
 			options.FindOneAndUpdate(),
 		).Err()
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.Success("User update successful", "/user")
+		handler.Success(ctx, "User update successful", "/user")
 	})
 }

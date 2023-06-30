@@ -9,7 +9,6 @@ import (
 	orderform "bot/forms/order"
 	"bot/log"
 	"bot/models"
-	"bot/web/handlers/response"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -22,6 +21,7 @@ import (
 var positionHandler = &position{}
 
 type position struct {
+	base
 }
 
 func (handler *position) Handle(router *gin.Engine) {
@@ -33,8 +33,6 @@ func (handler *position) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
-
 		filter := bson.M{
 			"userId": user.ID,
 			"status": "Enable",
@@ -44,13 +42,13 @@ func (handler *position) Handle(router *gin.Engine) {
 			filter, options.Find(),
 		)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		var items []models.Customer
 		if err = cursor.All(context.TODO(), &items); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -84,7 +82,7 @@ func (handler *position) Handle(router *gin.Engine) {
 		}
 
 		if customer.ApiKey == "" || customer.ApiSecret == "" {
-			resp.HTML("income/index.html", response.Context{
+			handler.HTML(ctx, "income/index.html", Context{
 				"items":    items,
 				"customer": customer,
 				"account":  new(account),
@@ -96,16 +94,16 @@ func (handler *position) Handle(router *gin.Engine) {
 		client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
 		account, err := client.NewGetAccountService().Do(context.Background())
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		orders, err := client.NewListOpenOrdersService().Do(context.Background())
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.HTML("position/index.html", response.Context{
+		handler.HTML(ctx, "position/index.html", Context{
 			"items":    items,
 			"customer": customer,
 			"account":  account,
@@ -121,21 +119,20 @@ func (handler *position) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
 		form := orderform.Close{}
 		if user.Role == "Demo" {
-			resp.Error("Demo user can not close position")
+			handler.Error(ctx, "Demo user can not close position")
 			return
 		}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		id, err := primitive.ObjectIDFromHex(form.CustomerID)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -144,7 +141,7 @@ func (handler *position) Handle(router *gin.Engine) {
 			"_id":    id,
 			"userId": user.ID,
 		}).Decode(&customer); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -169,11 +166,11 @@ func (handler *position) Handle(router *gin.Engine) {
 			Quantity(quantity).
 			Do(context.Background())
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.Success("Position close successful", "")
+		handler.Success(ctx, "Position close successful", "")
 	})
 
 	router.POST("/position/cancel", func(ctx *gin.Context) {
@@ -184,17 +181,16 @@ func (handler *position) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
 		form := orderform.Cancel{}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		id, err := primitive.ObjectIDFromHex(form.CustomerID)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -203,18 +199,18 @@ func (handler *position) Handle(router *gin.Engine) {
 			"_id":    id,
 			"userId": user.ID,
 		}).Decode(&customer); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
 		_, err = client.NewCancelOrderService().Symbol(form.Symbol).OrderID(form.OrderID).Do(context.Background())
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.Success("Order cancel successful", "")
+		handler.Success(ctx, "Order cancel successful", "")
 	})
 
 	router.POST("/position/create", func(ctx *gin.Context) {
@@ -225,17 +221,16 @@ func (handler *position) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
 		form := orderform.Create{}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		id, err := primitive.ObjectIDFromHex(form.CustomerID)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -244,13 +239,13 @@ func (handler *position) Handle(router *gin.Engine) {
 			"_id":    id,
 			"userId": user.ID,
 		}).Decode(&customer); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		exchange := exchange.New(customer)
 		if exchange == nil {
-			resp.Error("exchange mismatch")
+			handler.Error(ctx, "exchange mismatch")
 			return
 		}
 		size := exchange.FormatSize(form.Symbol, form.Size)
@@ -284,10 +279,10 @@ func (handler *position) Handle(router *gin.Engine) {
 			PositionSide(positionSide).
 			Quantity(size).
 			Do(context.Background()); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.Success("Order create successful", "")
+		handler.Success(ctx, "Order create successful", "")
 	})
 }

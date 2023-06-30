@@ -9,7 +9,6 @@ import (
 
 	forms "bot/forms/customer"
 	"bot/models"
-	"bot/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jaevor/go-nanoid"
@@ -21,6 +20,7 @@ import (
 var customerHandler = &customer{}
 
 type customer struct {
+	base
 }
 
 func (handler *customer) Handle(router *gin.Engine) {
@@ -32,7 +32,6 @@ func (handler *customer) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
 		filter := bson.M{
 			"userId": user.ID,
 		}
@@ -42,18 +41,18 @@ func (handler *customer) Handle(router *gin.Engine) {
 			filter,
 			options.Count().SetMaxTime(2*time.Second))
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		page, err := strconv.ParseInt(ctx.DefaultQuery("page", "1"), 10, 64)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		limit, err := strconv.ParseInt(ctx.DefaultQuery("limit", "10"), 10, 64)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		cursor, err := models.CustomerCollection.Find(
@@ -61,17 +60,17 @@ func (handler *customer) Handle(router *gin.Engine) {
 			filter, options.Find().SetSkip((page-1)*limit).SetLimit(limit),
 		)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		var items []models.Customer
 		if err = cursor.All(context.TODO(), &items); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.HTML("customer/index.html", response.Context{
+		handler.HTML(ctx, "customer/index.html", Context{
 			"page":  page,
 			"count": count,
 			"limit": limit,
@@ -80,8 +79,7 @@ func (handler *customer) Handle(router *gin.Engine) {
 	})
 
 	router.GET("/customer/add", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-		resp.HTML("customer/add.html", response.Context{})
+		handler.HTML(ctx, "customer/add.html", Context{})
 	})
 
 	router.POST("/customer/save", func(ctx *gin.Context) {
@@ -92,21 +90,20 @@ func (handler *customer) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
 		form := forms.Save{}
 		if user.Role == "Demo" {
-			resp.Error("Demo user can not add customer")
+			handler.Error(ctx, "Demo user can not add customer")
 			return
 		}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		token, err := nanoid.CustomASCII("0123456789abcdefghijklmnopqrstuvwxyz", 10)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -128,20 +125,18 @@ func (handler *customer) Handle(router *gin.Engine) {
 			saved,
 			options.InsertOne(),
 		); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.Success("Customer save successful", "/customer")
+		handler.Success(ctx, "Customer save successful", "/customer")
 	})
 
 	router.GET("/customer/edit/:id", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-
 		sId := ctx.Param("id")
 		uId, err := primitive.ObjectIDFromHex(sId)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -155,11 +150,11 @@ func (handler *customer) Handle(router *gin.Engine) {
 		if err := models.CustomerCollection.FindOne(context.TODO(), bson.M{
 			"_id": uId,
 		}).Decode(&customer); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.HTML("customer/edit.html", response.Context{
+		handler.HTML(ctx, "customer/edit.html", Context{
 			"item": customer,
 			"url":  url,
 		})
@@ -173,22 +168,21 @@ func (handler *customer) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
 		form := forms.Update{}
 		if user.Role == "Demo" {
-			resp.Error("Demo user can not edit customer")
+			handler.Error(ctx, "Demo user can not edit customer")
 			return
 		}
 
 		sId := ctx.Param("id")
 		cId, err := primitive.ObjectIDFromHex(sId)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -215,10 +209,10 @@ func (handler *customer) Handle(router *gin.Engine) {
 			options.FindOneAndUpdate(),
 		).Err()
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.Success("Customer update successful", "/customer")
+		handler.Success(ctx, "Customer update successful", "/customer")
 	})
 }

@@ -8,7 +8,6 @@ import (
 
 	"bot/log"
 	"bot/models"
-	"bot/web/handlers/response"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -20,6 +19,7 @@ import (
 var tradeHandler = &trade{}
 
 type trade struct {
+	base
 }
 
 func (handler *trade) Handle(router *gin.Engine) {
@@ -31,8 +31,6 @@ func (handler *trade) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
-
 		filter := bson.M{
 			"userId": user.ID,
 			"status": "Enable",
@@ -42,13 +40,13 @@ func (handler *trade) Handle(router *gin.Engine) {
 			filter, options.Find(),
 		)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		var items []models.Customer
 		if err = cursor.All(context.TODO(), &items); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -82,7 +80,7 @@ func (handler *trade) Handle(router *gin.Engine) {
 		}
 
 		if customer.ApiKey == "" || customer.ApiSecret == "" {
-			resp.HTML("income/index.html", response.Context{
+			handler.HTML(ctx, "income/index.html", Context{
 				"items":    items,
 				"customer": customer,
 				"trades":   make([]*futures.AccountTrade, 0),
@@ -93,14 +91,14 @@ func (handler *trade) Handle(router *gin.Engine) {
 		client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
 		trades, err := client.NewListAccountTradeService().Do(context.Background())
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		sort.SliceStable(trades, func(i, j int) bool {
 			return trades[i].Time > trades[j].Time
 		})
 
-		resp.HTML("trade/index.html", response.Context{
+		handler.HTML(ctx, "trade/index.html", Context{
 			"items":    items,
 			"customer": customer,
 			"trades":   trades,

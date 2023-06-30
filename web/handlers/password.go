@@ -7,7 +7,6 @@ import (
 	"bot/forms"
 	"bot/models"
 	"bot/utils"
-	"bot/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,12 +16,12 @@ import (
 var passwordHandler = &password{}
 
 type password struct {
+	base
 }
 
 func (handler *password) Handle(router *gin.Engine) {
 	router.GET("/password", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-		resp.HTML("password/index.html", response.Context{})
+		handler.HTML(ctx, "password/index.html", Context{})
 	})
 
 	router.POST("/password", func(ctx *gin.Context) {
@@ -33,20 +32,19 @@ func (handler *password) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
 		form := forms.Password{}
 		if user.Role == "Demo" {
-			resp.Error("Demo user can not change passowrd")
+			handler.Error(ctx, "Demo user can not change passowrd")
 			return
 		}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		if user.Password != utils.Encrypt(form.Password) {
-			resp.Error("Invalid password")
+			handler.Error(ctx, "Invalid password")
 			return
 		}
 
@@ -60,10 +58,10 @@ func (handler *password) Handle(router *gin.Engine) {
 			update,
 			options.FindOneAndUpdate(),
 		).Err(); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.Success("password update successful", "")
+		handler.Success(ctx, "password update successful", "")
 	})
 }
