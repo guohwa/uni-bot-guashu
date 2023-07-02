@@ -114,6 +114,11 @@ func open(customer models.Customer, command models.Command) error {
 		}
 	}
 
+	account, err = client.NewGetAccountService().Do(context.Background())
+	if err != nil {
+		return err
+	}
+
 	price, err := getPrice(command.Symbol)
 	if err != nil {
 		return err
