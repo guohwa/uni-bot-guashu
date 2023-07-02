@@ -111,7 +111,6 @@ func (handler *customer) Handle(router *gin.Engine) {
 			"userId":    user.ID,
 			"name":      form.Name,
 			"token":     token(),
-			"exchange":  form.Exchange,
 			"apiKey":    form.ApiKey,
 			"apiSecret": form.ApiSecret,
 			"capital":   form.Capital,
@@ -193,7 +192,6 @@ func (handler *customer) Handle(router *gin.Engine) {
 
 		update := bson.M{"$set": bson.M{
 			"name":      form.Name,
-			"exchange":  form.Exchange,
 			"apiKey":    form.ApiKey,
 			"apiSecret": form.ApiSecret,
 			"capital":   form.Capital,

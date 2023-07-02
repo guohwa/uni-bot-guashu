@@ -1,4 +1,4 @@
-package binance
+package exchange
 
 import (
 	"bot/log"

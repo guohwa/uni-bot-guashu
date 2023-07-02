@@ -243,11 +243,6 @@ func (handler *position) Handle(router *gin.Engine) {
 			return
 		}
 
-		exchange := exchange.New(customer)
-		if exchange == nil {
-			handler.Error(ctx, "exchange mismatch")
-			return
-		}
 		size := exchange.FormatSize(form.Symbol, form.Size)
 
 		var side futures.SideType

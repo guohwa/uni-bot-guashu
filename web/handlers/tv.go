@@ -75,14 +75,7 @@ func (handler *tv) Handle(router *gin.Engine) {
 		}
 
 		if command.Status == "NEW" {
-			exchange := exchange.New(customer)
-			if exchange != nil {
-				go exchange.Execute(command)
-			} else {
-				log.Error("exchange not found")
-				ctx.String(http.StatusInternalServerError, "internal error")
-				return
-			}
+			go exchange.Execute(customer, command)
 		}
 
 		ctx.String(http.StatusOK, "ok")
@@ -97,12 +90,10 @@ func (handler *tv) command(customer models.Customer, form forms.Command) (models
 		return command, errors.New("invalid symbol")
 	}
 
-	exchange := sections[0]
 	symbol := strings.TrimSuffix(sections[1], ".P")
 	command = models.Command{
 		ID:         primitive.NewObjectID(),
 		CustomerID: customer.ID,
-		Exchange:   exchange,
 		Action:     form.Action,
 		Symbol:     symbol,
 		Side:       form.Side,
@@ -112,12 +103,6 @@ func (handler *tv) command(customer models.Customer, form forms.Command) (models
 		Status:     "NEW",
 		Reason:     "",
 		Time:       time.Now().UTC().UnixMilli(),
-	}
-
-	if customer.Exchange != exchange {
-		command.Status = "FAILED"
-		command.Reason = "exchange mismatch"
-		return command, nil
 	}
 
 	if customer.Status == "Disable" {
