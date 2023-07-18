@@ -38,6 +38,43 @@ var actions = map[string]Action{
 	"DECR":  decr,
 }
 
+func Execute(customer models.Customer, command models.Command) {
+	action, ok := actions[command.Action]
+	if !ok {
+		log.Errorf("unsupported action: %s", command.Action)
+		return
+	}
+
+	update := func(err error) bson.M {
+		if err == nil {
+			return bson.M{"$set": bson.M{
+				"status": "SUCCESS",
+			}}
+		}
+		if err == ErrEmpty || err == ErrHold || err == ErrRisk {
+			return bson.M{"$set": bson.M{
+				"status": "FAILED",
+				"reason": err.Error(),
+			}}
+		}
+		log.Error(err)
+		return bson.M{"$set": bson.M{
+			"status": "FAILED",
+			"reason": "Api Error",
+		}}
+	}(action(customer, command))
+
+	filter := bson.M{"_id": command.ID}
+	if err := models.CommandCollection.FindOneAndUpdate(
+		context.TODO(),
+		filter,
+		update,
+		options.FindOneAndUpdate(),
+	).Err(); err != nil {
+		log.Error(err)
+	}
+}
+
 func FormatSize(symbol string, size float64) string {
 	precision := 0
 	for _, s := range ExchangeInfo.Symbols {
@@ -47,45 +84,6 @@ func FormatSize(symbol string, size float64) string {
 	}
 
 	return strconv.FormatFloat(size, 'f', precision, 64)
-}
-
-func Execute(customer models.Customer, command models.Command) {
-	if action, ok := actions[command.Action]; ok {
-		err := action(customer, command)
-
-		filter := bson.M{"_id": command.ID}
-
-		var update bson.M
-		if err != nil {
-			if err == ErrEmpty || err == ErrHold || err == ErrRisk {
-				update = bson.M{"$set": bson.M{
-					"status": "FAILED",
-					"reason": err.Error(),
-				}}
-			} else {
-				log.Error(err)
-				update = bson.M{"$set": bson.M{
-					"status": "FAILED",
-					"reason": "Api Error",
-				}}
-			}
-		} else {
-			update = bson.M{"$set": bson.M{
-				"status": "SUCCESS",
-			}}
-		}
-
-		if err := models.CommandCollection.FindOneAndUpdate(
-			context.TODO(),
-			filter,
-			update,
-			options.FindOneAndUpdate(),
-		).Err(); err != nil {
-			log.Error(err)
-		}
-	} else {
-		log.Errorf("unsupported action: %s", command.Action)
-	}
 }
 
 func open(customer models.Customer, command models.Command) error {
