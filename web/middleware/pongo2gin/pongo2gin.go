@@ -33,10 +33,11 @@ func init() {
 		}
 		return pongo2.AsValue(time.UnixMilli(v)), nil
 	})
+
+	pongo2.RegisterTag("pset", tagPsetParser)
 }
 
 func New(options RenderOptions) *Pongo2Render {
-
 	return &Pongo2Render{
 		Options: &options,
 	}

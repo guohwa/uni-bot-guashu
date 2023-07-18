@@ -14,8 +14,8 @@ import (
 )
 
 func Start() {
-	if config.App.Mode == "PROD" {
-		gin.SetMode(gin.ReleaseMode)
+	if config.App.Mode == "release" || config.App.Mode == "debug" || config.App.Mode == "test" {
+		gin.SetMode(config.App.Mode)
 	}
 
 	router := gin.Default()

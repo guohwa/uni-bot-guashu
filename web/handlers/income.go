@@ -83,7 +83,7 @@ func (handler *income) Handle(router *gin.Engine) {
 			handler.HTML(ctx, "income/index.html", Context{
 				"items":    items,
 				"customer": customer,
-				"incomes":  make([]*futures.IncomeHistory, 0),
+				"incomes":  nil,
 			})
 			return
 		}

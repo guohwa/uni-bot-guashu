@@ -5,12 +5,19 @@ import (
 	"bot/models"
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/uncle-gua/gobinance/futures"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+const (
+	RETRY = 5
+	SLEEP = 3
 )
 
 var zero = regexp.MustCompile(`^[\+\-]?0\.?0*$`)
@@ -103,14 +110,27 @@ func open(customer models.Customer, command models.Command) error {
 			}
 			return futures.SideTypeBuy
 		}(oppositeSide)
-		if _, err := client.NewCreateOrderService().
+		service := client.NewCreateOrderService().
 			Symbol(command.Symbol).
 			Type(futures.OrderTypeMarket).
 			Side(side).
 			PositionSide(oppositeSide).
-			Quantity(abs(amount2)).
-			Do(context.Background()); err != nil {
-			return err
+			Quantity(abs(amount2))
+		retry := 0
+		for {
+			_, err = service.Do(context.Background())
+			if err == nil {
+				break
+			}
+			if retry == 0 {
+				log.Errorf("error occurred while reverse position, message: %s", err.Error())
+			} else if retry > RETRY {
+				return fmt.Errorf("fatal error while reverse position, message: %s", err.Error())
+			} else {
+				log.Errorf("error occurred while reverse position, message: %s, retry: %d", err.Error(), retry)
+			}
+			time.Sleep(SLEEP * time.Millisecond)
+			retry++
 		}
 	}
 
@@ -139,17 +159,28 @@ func open(customer models.Customer, command models.Command) error {
 		return futures.SideTypeBuy
 	}(command.Side)
 
-	if _, err := client.NewCreateOrderService().
+	service := client.NewCreateOrderService().
 		Symbol(command.Symbol).
 		Type(futures.OrderTypeMarket).
 		Side(side).
 		PositionSide(command.Side).
-		Quantity(format(command.Symbol, command.Quantity)).
-		Do(context.Background()); err != nil {
-		return err
+		Quantity(format(command.Symbol, command.Quantity))
+	retry := 0
+	for {
+		_, err = service.Do(context.Background())
+		if err == nil {
+			return nil
+		}
+		if retry == 0 {
+			log.Errorf("error occurred while open position, message: %s", err.Error())
+		} else if retry > RETRY {
+			return fmt.Errorf("fatal error while open position, message: %s", err.Error())
+		} else {
+			log.Errorf("error occurred while open position, message: %s, retry: %d", err.Error(), retry)
+		}
+		time.Sleep(SLEEP * time.Millisecond)
+		retry++
 	}
-
-	return nil
 }
 
 func close(customer models.Customer, command models.Command) error {
@@ -171,17 +202,29 @@ func close(customer models.Customer, command models.Command) error {
 		return futures.SideTypeSell
 	}(command.Side)
 
-	if _, err := client.NewCreateOrderService().
+	service := client.NewCreateOrderService().
 		Symbol(command.Symbol).
 		Type(futures.OrderTypeMarket).
 		Side(side).
 		PositionSide(command.Side).
-		Quantity(abs(amount)).
-		Do(context.Background()); err != nil {
-		return err
-	}
+		Quantity(abs(amount))
 
-	return nil
+	retry := 0
+	for {
+		_, err = service.Do(context.Background())
+		if err == nil {
+			return nil
+		}
+		if retry == 0 {
+			log.Errorf("error occurred while close position, message: %s", err.Error())
+		} else if retry > RETRY {
+			return fmt.Errorf("fatal error while close position, message: %s", err.Error())
+		} else {
+			log.Errorf("error occurred while close position, message: %s, retry: %d", err.Error(), retry)
+		}
+		time.Sleep(SLEEP * time.Millisecond)
+		retry++
+	}
 }
 
 func incr(customer models.Customer, command models.Command) error {
@@ -216,17 +259,28 @@ func incr(customer models.Customer, command models.Command) error {
 		return futures.SideTypeBuy
 	}(command.Side)
 
-	if _, err := client.NewCreateOrderService().
+	service := client.NewCreateOrderService().
 		Symbol(command.Symbol).
 		Type(futures.OrderTypeMarket).
 		Side(side).
 		PositionSide(command.Side).
-		Quantity(format(command.Symbol, command.Quantity)).
-		Do(context.Background()); err != nil {
-		return err
+		Quantity(format(command.Symbol, command.Quantity))
+	retry := 0
+	for {
+		_, err = service.Do(context.Background())
+		if err == nil {
+			return nil
+		}
+		if retry == 0 {
+			log.Errorf("error occurred while incr position, message: %s", err.Error())
+		} else if retry > RETRY {
+			return fmt.Errorf("fatal error while incr position, message: %s", err.Error())
+		} else {
+			log.Errorf("error occurred while incr position, message: %s, retry: %d", err.Error(), retry)
+		}
+		time.Sleep(SLEEP * time.Millisecond)
+		retry++
 	}
-
-	return nil
 }
 
 func decr(customer models.Customer, command models.Command) error {
@@ -257,17 +311,28 @@ func decr(customer models.Customer, command models.Command) error {
 		quantity = abs(amount)
 	}
 
-	if _, err := client.NewCreateOrderService().
+	service := client.NewCreateOrderService().
 		Symbol(command.Symbol).
 		Type(futures.OrderTypeMarket).
 		Side(side).
 		PositionSide(command.Side).
-		Quantity(quantity).
-		Do(context.Background()); err != nil {
-		return err
+		Quantity(quantity)
+	retry := 0
+	for {
+		_, err = service.Do(context.Background())
+		if err == nil {
+			return nil
+		}
+		if retry == 0 {
+			log.Errorf("error occurred while decr position, message: %s", err.Error())
+		} else if retry > RETRY {
+			return fmt.Errorf("fatal error while decr position, message: %s", err.Error())
+		} else {
+			log.Errorf("error occurred while decr position, message: %s, retry: %d", err.Error(), retry)
+		}
+		time.Sleep(SLEEP * time.Millisecond)
+		retry++
 	}
-
-	return nil
 }
 
 func getAmount(positions []*futures.AccountPosition, symbol string, side futures.PositionSideType) string {

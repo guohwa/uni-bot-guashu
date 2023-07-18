@@ -82,7 +82,7 @@
                                         <div class="th">Action</div>
                                     </div>
                                 </div>
-                                <div class="tbody">{% for item in account.Positions %}{% if item.PositionAmt|float > 0 || item.PositionAmt|float < 0 %}
+                                <div class="tbody">{% pset nominal=0.0 %}{% for item in account.Positions %}{% if item.PositionAmt|float > 0 || item.PositionAmt|float < 0 %}{% pset nominal=item.PositionAmt|float*item.EntryPrice|float+nominal %}
                                     <div class="tr" data-customer="{{ customer.ID.Hex() }}">
                                         <div class="td" data-title="Symbol">{{ item.Symbol }}</div>
                                         <div class="td{% if item.PositionSide|upper == 'SHORT' %} text-red{% elif item.PositionSide|upper == 'LONG' %} text-green{% else %}{% endif %}" data-title="PositionSide">{{ item.PositionSide }}</div>
@@ -170,6 +170,10 @@
                                     <div class="tr">
                                         <div class="th" data-title="CanWithdraw">CanWithdraw</div>
                                         <div class="td" data-title="CanWithdraw">{{ account.CanWithdraw }}</div>
+                                    </div>
+                                    <div class="tr">
+                                        <div class="th" data-title="Leverage">Leverage</div>
+                                        <div class="td text-red" data-title="Leverage">{{ nominal/account.TotalWalletBalance }}</div>
                                     </div>
                                     <div class="tr">
                                         <div class="th" data-title="Risk">Risk</div>
