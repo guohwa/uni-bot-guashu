@@ -121,21 +121,27 @@ func open(customer models.Customer, command models.Command) error {
 		return ErrHold
 	}
 
-	oppositeSide := opposite(command.Side)
+	otherSide := func(s futures.PositionSideType) futures.PositionSideType {
+		if s == futures.PositionSideTypeLong {
+			return futures.PositionSideTypeShort
+		}
 
-	amount2 := getAmount(account.Positions, command.Symbol, oppositeSide)
+		return futures.PositionSideTypeLong
+	}(command.Side)
+
+	amount2 := getAmount(account.Positions, command.Symbol, otherSide)
 	if !isZero(amount2) {
 		side := func(ps futures.PositionSideType) futures.SideType {
 			if ps == futures.PositionSideTypeLong {
 				return futures.SideTypeSell
 			}
 			return futures.SideTypeBuy
-		}(oppositeSide)
+		}(otherSide)
 		service := client.NewCreateOrderService().
 			Symbol(command.Symbol).
 			Type(futures.OrderTypeMarket).
 			Side(side).
-			PositionSide(oppositeSide).
+			PositionSide(otherSide).
 			Quantity(abs(amount2))
 		if err := execute(service); err != nil {
 			return err
@@ -317,14 +323,6 @@ func abs(s string) string {
 
 func isZero(s string) bool {
 	return zero.MatchString(s)
-}
-
-func opposite(s futures.PositionSideType) futures.PositionSideType {
-	if s == futures.PositionSideTypeLong {
-		return futures.PositionSideTypeShort
-	}
-
-	return futures.PositionSideTypeLong
 }
 
 func format(symbol string, size float64) string {
