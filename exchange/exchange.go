@@ -31,7 +31,7 @@ var (
 
 type Action func(customer models.Customer, command models.Command) error
 
-type Service interface {
+type CreateOrderService interface {
 	Do(ctx context.Context, opts ...futures.RequestOption) (res *futures.CreateOrderResponse, err error)
 }
 
@@ -90,7 +90,7 @@ func FormatSize(symbol string, size float64) string {
 	return strconv.FormatFloat(size, 'f', precision, 64)
 }
 
-func execute(service Service) error {
+func createOrder(service CreateOrderService, action string) error {
 	retry := 0
 	for {
 		_, err := service.Do(context.Background())
@@ -98,11 +98,30 @@ func execute(service Service) error {
 			return nil
 		}
 		if retry == 0 {
-			log.Errorf("error occurred while reverse position, message: %s", err.Error())
+			log.Errorf("error occurred while %s position, message: %s", action, err.Error())
 		} else if retry < RETRY {
-			log.Errorf("error occurred while reverse position, message: %s, retry: %d", err.Error(), retry)
+			log.Errorf("error occurred while %s position, message: %s, retry: %d", action, err.Error(), retry)
 		} else {
-			return fmt.Errorf("fatal error while reverse position, message: %s", err.Error())
+			return fmt.Errorf("fatal error while %s position, message: %s", action, err.Error())
+		}
+		time.Sleep(SLEEP * time.Millisecond)
+		retry++
+	}
+}
+
+func getAccount(client *futures.Client) (*futures.Account, error) {
+	retry := 0
+	for {
+		account, err := client.NewGetAccountService().Do(context.Background())
+		if err == nil {
+			return account, nil
+		}
+		if retry == 0 {
+			log.Errorf("error occurred while get account, message: %s", err.Error())
+		} else if retry < RETRY {
+			log.Errorf("error occurred while get account, message: %s, retry: %d", err.Error(), retry)
+		} else {
+			return nil, fmt.Errorf("fatal error while get account, message: %s", err.Error())
 		}
 		time.Sleep(SLEEP * time.Millisecond)
 		retry++
@@ -111,7 +130,7 @@ func execute(service Service) error {
 
 func open(customer models.Customer, command models.Command) error {
 	client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
-	account, err := client.NewGetAccountService().Do(context.Background())
+	account, err := getAccount(client)
 	if err != nil {
 		return err
 	}
@@ -143,12 +162,12 @@ func open(customer models.Customer, command models.Command) error {
 			Side(side).
 			PositionSide(otherSide).
 			Quantity(abs(amount2))
-		if err := execute(service); err != nil {
+		if err := createOrder(service, "reverse"); err != nil {
 			return err
 		}
 	}
 
-	account, err = client.NewGetAccountService().Do(context.Background())
+	account, err = getAccount(client)
 	if err != nil {
 		return err
 	}
@@ -179,12 +198,12 @@ func open(customer models.Customer, command models.Command) error {
 		Side(side).
 		PositionSide(command.Side).
 		Quantity(format(command.Symbol, command.Quantity))
-	return execute(service)
+	return createOrder(service, "open")
 }
 
 func close(customer models.Customer, command models.Command) error {
 	client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
-	account, err := client.NewGetAccountService().Do(context.Background())
+	account, err := getAccount(client)
 	if err != nil {
 		return err
 	}
@@ -207,12 +226,12 @@ func close(customer models.Customer, command models.Command) error {
 		Side(side).
 		PositionSide(command.Side).
 		Quantity(abs(amount))
-	return execute(service)
+	return createOrder(service, "close")
 }
 
 func incr(customer models.Customer, command models.Command) error {
 	client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
-	account, err := client.NewGetAccountService().Do(context.Background())
+	account, err := getAccount(client)
 	if err != nil {
 		return err
 	}
@@ -248,12 +267,12 @@ func incr(customer models.Customer, command models.Command) error {
 		Side(side).
 		PositionSide(command.Side).
 		Quantity(format(command.Symbol, command.Quantity))
-	return execute(service)
+	return createOrder(service, "incr")
 }
 
 func decr(customer models.Customer, command models.Command) error {
 	client := futures.NewClient(customer.ApiKey, customer.ApiSecret)
-	account, err := client.NewGetAccountService().Do(context.Background())
+	account, err := getAccount(client)
 	if err != nil {
 		return err
 	}
@@ -285,7 +304,7 @@ func decr(customer models.Customer, command models.Command) error {
 		Side(side).
 		PositionSide(command.Side).
 		Quantity(quantity)
-	return execute(service)
+	return createOrder(service, "decr")
 }
 
 func getAmount(positions []*futures.AccountPosition, symbol string, side futures.PositionSideType) string {
