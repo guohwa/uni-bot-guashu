@@ -10,7 +10,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/uncle-gua/base64Captcha v0.0.0-20221229173854-28fc6caf8479
-	github.com/uncle-gua/gobinance v0.0.0-20230702151208-e8c3f77989fe
+	github.com/uncle-gua/gobinance v0.0.0-20230808164650-2e0edc25fa7b
 	go.mongodb.org/mongo-driver v1.12.0
 )
 
@@ -40,7 +40,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
-	github.com/panjf2000/ants/v2 v2.8.0 // indirect
+	github.com/panjf2000/ants/v2 v2.8.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
