@@ -10,7 +10,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/uncle-gua/base64Captcha v0.0.0-20221229173854-28fc6caf8479
-	github.com/uncle-gua/gobinance v0.0.0-20230808164650-2e0edc25fa7b
+	github.com/uncle-gua/gobinance v0.0.0-20230824232338-e3e2aaa1d7d6
 	go.mongodb.org/mongo-driver v1.12.0
 )
 

@@ -128,6 +128,8 @@ github.com/uncle-gua/gobinance v0.0.0-20230703034142-b8418f2959e1 h1:iwgCiyNoIDa
 github.com/uncle-gua/gobinance v0.0.0-20230703034142-b8418f2959e1/go.mod h1:yUhzjhsdYOF4aLgP+JdSEPKzAYuExbKiu3tbZNb4CdU=
 github.com/uncle-gua/gobinance v0.0.0-20230808164650-2e0edc25fa7b h1:J+tzo06RMGQSdx7+SAgjpMG//FKlVdnRCvdYegFmyME=
 github.com/uncle-gua/gobinance v0.0.0-20230808164650-2e0edc25fa7b/go.mod h1:O2fDBkS0arjt/h+r4cD4TroF8C+SnTADrFjn8Oxm8Mc=
+github.com/uncle-gua/gobinance v0.0.0-20230824232338-e3e2aaa1d7d6 h1:9ptrOTfe3vuF/1LtFRAD+465JzUw1crazmQbZqywA9w=
+github.com/uncle-gua/gobinance v0.0.0-20230824232338-e3e2aaa1d7d6/go.mod h1:O2fDBkS0arjt/h+r4cD4TroF8C+SnTADrFjn8Oxm8Mc=
 github.com/uncle-gua/wsc v0.0.0-20230607192913-877e3ba4b463 h1:Wi4zDZ8u82UlVvxVUDhCBEGJ/FCQ9Ls5Tu8AjhGRz7U=
 github.com/uncle-gua/wsc v0.0.0-20230607192913-877e3ba4b463/go.mod h1:TK6XPlintJAKlRm7X9Wxm2JUUDwNmGli68KXym+H9z0=
 github.com/xdg-go/pbkdf2 v1.0.0 h1:Su7DPu48wXMwC3bs7MCNG+z4FhcyEuz5dlvchbq0B0c=
